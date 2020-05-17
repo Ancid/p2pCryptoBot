@@ -62,6 +62,7 @@ def show_offers(message):
     global selected_offer_type
     global selected_currency
     global selected_payment_method
+    global subscription_active
     bot.send_message(
         message.chat.id, "Well, you selected *" + selected_offer_type.upper() + "* Btc offers for *" + \
                          selected_payment_method.upper() + "* in *" + selected_currency.upper() + \
