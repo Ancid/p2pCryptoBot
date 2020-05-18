@@ -4,9 +4,10 @@ import json
 import time
 import requests
 import telebot
+import globals
 
 from config import *
-from SQLighter import SQLighter
+from mongo_db.MongoManager import db_check_new_offers, db_save_offers, db_get_subscribers
 
 bot = telebot.TeleBot(TOKEN)
 
@@ -34,7 +35,7 @@ def get_offers_message_array(telegram_user_id, offer_type, payment_method=False,
     offer_list = response_decoded['data']['offers']
     notify_subscribers(telegram_user_id, offer_list, offer_type, payment_method, currency_code)
 
-    SQLighter.save_offers(offer_list)
+    db_save_offers(offer_list)
 
     return send_offer_list_messages(offer_list, OFFERS_LIMIT)
 
@@ -53,14 +54,15 @@ def send_offer_list_messages(offer_list, limit=None):
     for offer in offer_list:
         offer_messages.append(
             '*' + str(offer['fiat_price_per_btc']) + ' ' + str(offer['currency_code']) + '* per 1₿, limits ' +
-            str(offer['fiat_amount_range_min']) + '-' + str(offer['fiat_amount_range_max']) + "\n" + offer['offer_link']
+            str(offer['fiat_amount_range_min']) + '-' + str(offer['fiat_amount_range_max']) + ' ' +
+            str(offer['currency_code']) + "\n" + offer['offer_link']
         )
 
     return offer_messages
 
 
 def notify_subscribers(telegram_user_id, offer_list, offer_type, payment_method, currency_code):
-    subscribers = SQLighter.get_subscribers(telegram_user_id, offer_type, payment_method, currency_code)
+    subscribers = db_get_subscribers(telegram_user_id, offer_type, payment_method, currency_code)
     new_offers_filter = makefilter(offer_list)
     filtered_offers = list(filter(new_offers_filter, offer_list))
 
@@ -69,7 +71,7 @@ def notify_subscribers(telegram_user_id, offer_list, offer_type, payment_method,
 
 
 def makefilter(offer_list):
-    existed_offers_hashes = SQLighter.check_new_offers(offer_list)
+    existed_offers_hashes = db_check_new_offers(offer_list)
 
     def myfilter(x):
         return x['offer_id'] not in existed_offers_hashes
@@ -78,8 +80,12 @@ def makefilter(offer_list):
 
 
 def send_found_new_offers(user, offer_list):
-    chat_id = user['chat_id']
     messages = send_offer_list_messages(offer_list)
-    messages.append("Hi! Your subscription for *BUY* Btc offers for *Paypal* with *USD*. Has new offers:")
+    messages.append(
+        "Hi! Your subscription for *" + globals.selected_offer_type.upper() +
+        "* Btc offers for *" + globals.selected_payment_method.upper() + "* with *" +
+        globals.selected_currency.upper() + "*. Has new offers:"
+    )
+    chat_id = user['chat_id']
     for message in messages:
         bot.send_message(chat_id, message, parse_mode="Markdown", disable_web_page_preview=True)
