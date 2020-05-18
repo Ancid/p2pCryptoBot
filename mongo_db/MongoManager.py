@@ -9,10 +9,6 @@ import globals
 from datetime import datetime, timedelta
 from mongo_db.db import db_users, db_offers
 
-# user_mode_collections = {
-#     'subscribe': db_subscriptions,
-#     'offers': db_search_options,
-# }
 user_mode_collections = {
     'subscribe': 'subscription',
     'offers': 'search',
