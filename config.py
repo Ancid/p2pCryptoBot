@@ -1,6 +1,6 @@
 import os
 
-os.environ['MONGODB_URI'] = 'mongodb://localhost:27017/offersBot'
+# os.environ['MONGODB_URI'] = 'mongodb://localhost:27017/offersBot'
 TOKEN = '959670109:AAHTx35TqKD5U2FX6lnX5frQ3-1s27YbMcA'
 APP_NAME = 'offers-bot'
 DB_NAME = 'db/offersStorage'
