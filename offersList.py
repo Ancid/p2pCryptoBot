@@ -41,10 +41,8 @@ def get_offers_array(offer_type, payment_method=False, currency_code=False):
 
 def make_offer_list_messages(offer_list, limit=None):
     offer_messages = []
-    print(len(offer_list))
     if limit:
         offer_list = offer_list[:limit]
-        print(len(offer_list))
     for offer in offer_list:
         offer_messages.append(
             '*' + str(offer['fiat_price_per_btc']) + ' ' + str(offer['currency_code']) + '* per 1₿, limits ' + \
