@@ -126,4 +126,4 @@ def check_filled_options():
     return globals.selected_offer_type and globals.selected_payment_method and globals.selected_currency
 
 
-bot.polling(none_stop=True, interval=0)
+# bot.polling(none_stop=True, interval=0)
