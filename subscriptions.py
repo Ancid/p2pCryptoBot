@@ -21,3 +21,6 @@ def walk_through_subsciptions():
                 any_user['subscription']['currency_code']
             )
             db_save_offers(offers)
+            print('notified ' + any_user['subscription']['offer_type'] + any_user['subscription']['payment_method'] + \
+                  any_user['subscription']['currency_code']
+                  )

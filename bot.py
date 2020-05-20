@@ -12,7 +12,6 @@ from markup.offerType import markup_offer_type
 from mongo_db.MongoManager import db_add_user, db_check_subscription, db_update_user_options, db_subscribe, \
     db_save_offers
 from offersList import make_offer_list_messages, get_offers_array, notify_subscribers
-from subscriptions import walk_through_subsciptions
 
 bot = telebot.TeleBot(TOKEN)
 print(bot.get_me())
