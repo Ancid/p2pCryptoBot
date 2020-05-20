@@ -25,6 +25,7 @@ def index():
 def webhook():
     bot.remove_webhook()
     bot.set_webhook(url="https://{}.herokuapp.com/{}".format(APP_NAME, TOKEN))
+    print("https://{}.herokuapp.com/{}".format(APP_NAME, TOKEN))
     return "Hello from OffersBot!", 200
 
 
