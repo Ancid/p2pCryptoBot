@@ -1,7 +1,7 @@
 # import os
 
 # os.environ['MONGODB_URI'] = 'mongodb://localhost:27017/offersBot'
-TOKEN = '1275378588:AAF2ue8ewLQtgWJelZyD6rgdB_upq1T6zv4'
+TOKEN = '1275378588:AAF3KRJxWTCsR5RXtG4H6WRkybr4Gkk-g3Y'
 APP_NAME = 'offers-bot'
 DB_NAME = 'db/offersStorage'
 API_KEY = "Z4TPCz2VKHTlRAMAXxLqgHS18MT7eLbd"
