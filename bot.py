@@ -50,8 +50,14 @@ def callback_inline_offer_type(call):
                 update_user_options(call)
                 if globals.selected_mode == 'offers':
                     show_offers(call.message)
-                else:
+                elif globals.selected_mode == 'subscribe':
                     process_subscription(call.message)
+                else:
+                    bot.send_message(
+                        call.message.chat.id,
+                        MSG_OOPS,
+                        reply_markup=markup_actions(globals.subscription_active)
+                    )
             else:
                 bot.send_message(
                     call.message.chat.id,
