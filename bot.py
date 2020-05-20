@@ -29,11 +29,9 @@ def callback_inline_offer_type(call):
         if call.data.startswith('action_search'):
             globals.selected_mode = 'offers'
             bot.send_message(call.message.chat.id, MSG_SELECT_TYPE, reply_markup=markup_offer_type())
-            print(globals.selected_mode)
         if call.data.startswith('action_subscribe'):
             globals.selected_mode = 'subscribe'
             bot.send_message(call.message.chat.id, MSG_SELECT_TYPE, reply_markup=markup_offer_type())
-            print(globals.selected_mode)
         if call.data.startswith('action_unsubscribe'):
             db_subscribe(call.message.chat.id, False)
             globals.subscription_active = False
@@ -42,15 +40,12 @@ def callback_inline_offer_type(call):
             db_add_user(call)
             globals.selected_offer_type = call.data.split('_')[1]
             choosing_payment_method(call.message)
-            print(globals.selected_offer_type)
         if call.data.startswith('pm_'):
             globals.selected_payment_method = call.data.split('_')[1]
             choosing_currency(call.message)
-            print(globals.selected_payment_method)
         if call.data.startswith('currency_'):
             globals.selected_currency = call.data.split('_')[1]
-            print(check_filled_options())
-            if check_filled_options():
+            if globals.selected_currency and check_filled_options():
                 update_user_options(call)
                 if globals.selected_mode == 'offers':
                     show_offers(call.message)
