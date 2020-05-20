@@ -4,15 +4,17 @@ import json
 import time
 import requests
 import telebot
+from telebot.apihelper import ApiException
+
 import globals
 
 from config import *
-from mongo_db.MongoManager import db_check_new_offers, db_save_offers, db_get_subscribers
+from mongo_db.MongoManager import db_check_new_offers, db_get_subscribers
 
 bot = telebot.TeleBot(TOKEN)
 
 
-def get_offers_message_array(telegram_user_id, offer_type, payment_method=False, currency_code=False):
+def get_offers_array(offer_type, payment_method=False, currency_code=False):
     nonce = str(int(time.time()))
     body = 'apikey=' + API_KEY + '&' + 'nonce=' + nonce
     body += '&offer_type=' + offer_type
@@ -33,41 +35,35 @@ def get_offers_message_array(telegram_user_id, offer_type, payment_method=False,
 
     response_decoded = json.loads(response.text)
     offer_list = response_decoded['data']['offers']
-    notify_subscribers(telegram_user_id, offer_list, offer_type, payment_method, currency_code)
 
-    db_save_offers(offer_list)
-
-    return send_offer_list_messages(offer_list, OFFERS_LIMIT)
+    return offer_list
 
 
-# def load_offers():
-#     with open('offers.json', 'r') as f:
-#         offers_dict = json.load(f)
-#
-#     return offers_dict['data']['offers']
-
-
-def send_offer_list_messages(offer_list, limit=None):
+def make_offer_list_messages(offer_list, limit=None):
     offer_messages = []
+    print(len(offer_list))
     if limit:
         offer_list = offer_list[:limit]
+        print(len(offer_list))
     for offer in offer_list:
         offer_messages.append(
-            '*' + str(offer['fiat_price_per_btc']) + ' ' + str(offer['currency_code']) + '* per 1₿, limits ' +
-            str(offer['fiat_amount_range_min']) + '-' + str(offer['fiat_amount_range_max']) + ' ' +
-            str(offer['currency_code']) + "\n" + offer['offer_link']
+            '*' + str(offer['fiat_price_per_btc']) + ' ' + str(offer['currency_code']) + '* per 1₿, limits ' + \
+            str(offer['fiat_amount_range_min']) + '-' + str(offer['fiat_amount_range_max']) + ' ' + \
+            str(offer['currency_code']) + "\n" + 'From user *' + offer['offer_owner_username'] + "*\n" + \
+            offer['offer_link']
         )
 
     return offer_messages
 
 
-def notify_subscribers(telegram_user_id, offer_list, offer_type, payment_method, currency_code):
-    subscribers = db_get_subscribers(telegram_user_id, offer_type, payment_method, currency_code)
+def notify_subscribers(current_chat_id, offer_list, offer_type, payment_method, currency_code):
+    subscribers = db_get_subscribers(current_chat_id, offer_type, payment_method, currency_code)
     new_offers_filter = makefilter(offer_list)
     filtered_offers = list(filter(new_offers_filter, offer_list))
 
     for user in subscribers:
-        send_found_new_offers(user, filtered_offers)
+        if user['chat_id'] != current_chat_id:
+            send_found_new_offers(user, filtered_offers)
 
 
 def makefilter(offer_list):
@@ -80,12 +76,15 @@ def makefilter(offer_list):
 
 
 def send_found_new_offers(user, offer_list):
-    messages = send_offer_list_messages(offer_list)
-    messages.append(
-        "Hi! Your subscription for *" + globals.selected_offer_type.upper() +
-        "* Btc offers for *" + globals.selected_payment_method.upper() + "* with *" +
-        globals.selected_currency.upper() + "*. Has new offers:"
-    )
-    chat_id = user['chat_id']
-    for message in messages:
-        bot.send_message(chat_id, message, parse_mode="Markdown", disable_web_page_preview=True)
+    try:
+        messages = make_offer_list_messages(offer_list, SUBSCRIPTION_LIMIT)
+        if len(messages):
+            chat_id = user['chat_id']
+            update_message = "Hey! I've found some new offers for *" + user['subscription']['offer_type'].upper() + \
+                             "* Btc offers for *" + user['subscription']['payment_method'].upper() + "* with *" + \
+                             user['subscription']['currency_code'].upper() + "*:"
+            bot.send_message(chat_id, update_message, parse_mode="Markdown", disable_web_page_preview=True)
+            for message in messages:
+                bot.send_message(chat_id, message, parse_mode="Markdown", disable_web_page_preview=True)
+    except ApiException:
+        pass

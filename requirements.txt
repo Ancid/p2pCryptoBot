@@ -1,4 +1,6 @@
 pyTelegramBotAPI
-flask
+flask~=1.1.2
 gunicorn
-pymongo
+pymongo~=3.10.1
+telebot~=0.0.3
+requests~=2.7.0

@@ -16,21 +16,13 @@ user_mode_collections = {
 
 
 def db_add_user(call):
-    if not db_users.find_one({"telegram_user_id": call.from_user.id}):
+    if not db_users.find_one({"chat_id": call.from_user.id}):
         db_users.insert_one({
-            "telegram_user_id": call.from_user.id,
-            "chat_id": call.message.chat.id,
+            "chat_id": call.from_user.id,
             "username": call.from_user.username,
             "subscription": {"active": False},
             "search": {}
         })
-        # db_search_options.insert_one({
-        #     "chat_id": call.message.chat.id
-        # })
-        # db_subscriptions.insert_one({
-        #     "chat_id": call.message.chat.id,
-        #     "active": False
-        # })
 
 
 def db_check_subscription(chat_id):
@@ -39,11 +31,6 @@ def db_check_subscription(chat_id):
     })
     if user:
         return user['subscription']['active']
-    # subscription = db_subscriptions.find_one({
-    #     "chat_id": chat_id
-    # })
-    # if subscription:
-    #     return subscription.active
 
     return False
 
@@ -68,14 +55,6 @@ def db_update_user_options(chat_id, options):
         }
     )
 
-    # db_collection = user_mode_collections[globals.selected_mode]
-    # db_collection.update({"chat_id": chat_id}, {"$set": {
-    #     "offer_type": options['offer_type'],
-    #     "payment_method": options['payment_method'],
-    #     "currency_code": options['currency_code'],
-    #     "hash": hash_val
-    # }})
-
 
 def db_check_new_offers(offers_list):
     hashes = []
@@ -84,12 +63,13 @@ def db_check_new_offers(offers_list):
 
     existed_offers = db_offers.find({
         "hash": {"$in": hashes},
-        "created_at": {"$gte": datetime.today() - timedelta(days=1)}
+        "created_at": {"$gte": datetime.today() - timedelta(days=3)}
     })
 
     results = []
     if existed_offers.count():
-        results = existed_offers
+        for offer in existed_offers:
+            results.append(offer['hash'] )
 
     return results
 
@@ -107,20 +87,23 @@ def db_save_offers(offers_list):
 
 
 def db_subscribe(chat_id, active):
-    db_users.update({"chat_id": chat_id}, {"$set": {"subscription.active": True}})
+    db_users.update({"chat_id": chat_id}, {"$set": {"subscription.active": active}})
 
 
 def db_get_subscribers(chat_id, offer_type, payment_method, currency_code):
     hash_str = offer_type + payment_method + currency_code
     users = db_users.find({
-        "chat_id": chat_id,
         "subscription.hash": hashlib.md5(hash_str.encode('utf-8')).hexdigest(),
         "subscription.active": True
     })
 
-    columns = ['username', 'telegram_user_id', 'chat_id']
-    results = []
-    for row in users:
-        results.append(dict(zip(columns, row)))
+    # columns = ['username', 'chat_id', 'subscription']
+    # results = []
+    # for row in users:
+    #     results.append(dict(zip(columns, row)))
 
-    return results
+    return list(users)
+
+
+def db_get_groupped_subscriptions():
+    return list(db_users.aggregate([{"$group": {"_id": "$subscription.hash", "count": {"$sum": 1}}}]))

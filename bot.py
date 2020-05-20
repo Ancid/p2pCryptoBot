@@ -9,8 +9,10 @@ from markup.paymentMethod import markup_payment_method
 from messages import *
 from markup.actions import markup_actions
 from markup.offerType import markup_offer_type
-from mongo_db.MongoManager import db_add_user, db_check_subscription, db_update_user_options, db_subscribe
-from offersList import get_offers_message_array, send_offer_list_messages
+from mongo_db.MongoManager import db_add_user, db_check_subscription, db_update_user_options, db_subscribe, \
+    db_save_offers
+from offersList import make_offer_list_messages, get_offers_array, notify_subscribers
+from subscriptions import walk_through_subsciptions
 
 bot = telebot.TeleBot(TOKEN)
 print(bot.get_me())
@@ -89,14 +91,18 @@ def show_offers(message):
         "*. Let\'s me check some offers for you...",
         parse_mode="Markdown"
     )
-    offers = get_offers_message_array(
+    offers = get_offers_array(globals.selected_offer_type, globals.selected_payment_method, globals.selected_currency)
+    notify_subscribers(
         message.chat.id,
+        offers,
         globals.selected_offer_type,
         globals.selected_payment_method,
         globals.selected_currency
     )
-    if len(offers):
-        for msg in offers:
+    db_save_offers(offers)
+    offer_messages = make_offer_list_messages(offers, SEARCH_LIMIT)
+    if len(offer_messages):
+        for msg in offer_messages:
             bot.send_message(message.chat.id, msg, parse_mode="Markdown", disable_web_page_preview=True)
         bot.send_message(message.chat.id, MSG_OFFERS, reply_markup=markup_actions(globals.subscription_active))
     else:

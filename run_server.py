@@ -4,6 +4,8 @@ from config import *
 from bot import bot
 import os
 
+from subscriptions import walk_through_subsciptions
+
 server = flask.Flask(__name__)
 
 
@@ -16,15 +18,17 @@ def get_message():
 
 @server.route('/', methods=["GET"])
 def index():
-    bot.remove_webhook()
-    bot.set_webhook(url="https://{}.herokuapp.com/{}".format(APP_NAME, TOKEN))
+    # bot.remove_webhook()
+    # bot.set_webhook(url="https://{}.herokuapp.com/{}".format(APP_NAME, TOKEN))
     return "Hello from OffersBot!", 200
 
-# @server.route('/check/subscriptions', methods=["GET"])
-# def crone():
-#     subscriptions = db_users
-#
+
+@server.route('/check/subscriptions', methods=["GET"])
+def crone():
+    walk_through_subsciptions()
+    return "Done!", 200
 
 
 if __name__ == "__main__":
-    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
+    server.run(debug=True)
+    # server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
