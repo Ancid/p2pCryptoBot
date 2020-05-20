@@ -18,8 +18,13 @@ def get_message():
 
 @server.route('/', methods=["GET"])
 def index():
-    # bot.remove_webhook()
-    # bot.set_webhook(url="https://{}.herokuapp.com/{}".format(APP_NAME, TOKEN))
+    return "Hello from OffersBot!", 200
+
+
+@server.route('/webhook', methods=["GET"])
+def index():
+    bot.remove_webhook()
+    bot.set_webhook(url="https://{}.herokuapp.com/{}".format(APP_NAME, TOKEN))
     return "Hello from OffersBot!", 200
 
 
