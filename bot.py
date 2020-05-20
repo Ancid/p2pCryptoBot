@@ -14,6 +14,7 @@ from mongo_db.MongoManager import db_add_user, db_check_subscription, db_update_
 from offersList import make_offer_list_messages, get_offers_array, notify_subscribers
 
 bot = telebot.TeleBot(TOKEN)
+bot.remove_webhook()
 print(bot.get_me())
 
 
@@ -44,8 +45,8 @@ def callback_inline_offer_type(call):
             globals.selected_payment_method = call.data.split('_')[1]
             choosing_currency(call.message)
         if call.data.startswith('currency_'):
-            globals.selected_currency = call.data.split('_')[1]
-            if globals.selected_currency and check_filled_options():
+            globals.selected_currency = call.data.split('_', 1)[1]
+            if check_filled_options(globals.selected_currency):
                 update_user_options(call)
                 if globals.selected_mode == 'offers':
                     show_offers(call.message)
@@ -127,8 +128,10 @@ def process_subscription(message):
     bot.send_message(message.chat.id, MSG_CHECK_OFFERS, reply_markup=markup_actions(True))
 
 
-def check_filled_options():
-    return globals.selected_offer_type and globals.selected_payment_method and globals.selected_currency
+def check_filled_options(currency=None):
+    if currency is None:
+        currency = globals.selected_currency
+    return globals.selected_offer_type and globals.selected_payment_method and currency
 
 
-# bot.polling(none_stop=True, interval=0)
+bot.polling(none_stop=True, interval=0)
