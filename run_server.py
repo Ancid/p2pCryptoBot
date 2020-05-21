@@ -34,5 +34,11 @@ def crone():
     return "Done!", 200
 
 
+@server.route('/alias', methods=["GET"])
+def crone_alias():
+    walk_through_subsciptions()
+    return "Done!", 200
+
+
 if __name__ == "__main__":
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
