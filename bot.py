@@ -24,13 +24,16 @@ runtime_subscription_active = globals.subscription_active
 @bot.message_handler(content_types=['text'])
 def start(message):
     global runtime_subscription_active
-    globals.subscription_active = runtime_subscription_active = db_check_subscription(message.chat.id)
+    runtime_subscription_active = db_check_subscription(message.chat.id)
+    globals.subscription_active = runtime_subscription_active
     bot.send_message(message.chat.id, MSG_HELLO, reply_markup=markup_actions(runtime_subscription_active))
 
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline_offer_type(call):
     global runtime_subscription_active
+    if runtime_subscription_active == '':
+        runtime_subscription_active = db_check_subscription(call.message.chat.id)
     if call.message:
         if call.data.startswith('action_search'):
             globals.selected_mode = 'offers'
@@ -40,7 +43,8 @@ def callback_inline_offer_type(call):
             bot.send_message(call.message.chat.id, MSG_SELECT_TYPE, reply_markup=markup_offer_type())
         if call.data.startswith('action_unsubscribe'):
             db_subscribe(call.message.chat.id, False)
-            globals.subscription_active = runtime_subscription_active = False
+            runtime_subscription_active = False
+            globals.subscription_active = runtime_subscription_active
             bot.send_message(call.message.chat.id, MSG_UNSUBSCRIBED, reply_markup=markup_actions())
         if call.data.startswith('type_'):
             db_add_user(call)
