@@ -114,6 +114,7 @@ def show_offers(message):
     global runtime_payment_method
     global runtime_selected_offer_type
     global runtime_selected_currency
+    global runtime_subscription_active
 
     bot.send_message(
         message.chat.id,
