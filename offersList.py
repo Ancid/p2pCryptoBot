@@ -6,9 +6,9 @@ import requests
 import telebot
 from telebot.apihelper import ApiException
 
-import globals
-
 from config import *
+from markup.subsciption import markup_subscription
+from messages import MSG_YOU_CAN
 from mongo_db.MongoManager import db_check_new_offers, db_get_subscribers
 
 bot = telebot.TeleBot(TOKEN)
@@ -59,9 +59,11 @@ def notify_subscribers(current_chat_id, offer_list, offer_type, payment_method, 
     new_offers_filter = makefilter(offer_list)
     filtered_offers = list(filter(new_offers_filter, offer_list))
 
-    for user in subscribers:
-        if user['chat_id'] != current_chat_id:
-            send_found_new_offers(user, filtered_offers)
+    if len(filtered_offers):
+        for user in subscribers:
+            if user['chat_id'] != current_chat_id:
+                send_found_new_offers(user, filtered_offers)
+        bot.send_message(current_chat_id, MSG_YOU_CAN, reply_markup=markup_subscription())
 
 
 def makefilter(offer_list):
