@@ -5,7 +5,6 @@ from offersList import get_offers_array, notify_subscribers
 
 def walk_through_subsciptions():
     subscriptions = db_get_groupped_subscriptions()
-    print(subscriptions)
     if subscriptions is not None and len(subscriptions):
         for subscription in subscriptions:
             any_user = db_users.find_one({"subscription.hash": subscription['_id']})
