@@ -13,7 +13,7 @@ def markup_payment_method():
 
     mk_payment_method = types.InlineKeyboardMarkup(row_width=3)
     mk_payment_method.add(
-        *[types.InlineKeyboardButton(text=name, callback_data='pm_' + payment_methods[name]) for name in
+        *[types.InlineKeyboardButton(text=name, callback_data='pm:' + payment_methods[name]) for name in
           payment_methods]
     )
 

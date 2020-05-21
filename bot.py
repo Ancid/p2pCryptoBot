@@ -42,25 +42,25 @@ def callback_inline_offer_type(call):
     if runtime_subscription_active == '':
         runtime_subscription_active = db_check_subscription(call.message.chat.id)
     if call.message:
-        if call.data.startswith('action_search'):
+        if call.data.startswith('action:search'):
             runtime_selected_mode = 'offers'
             bot.send_message(call.message.chat.id, MSG_SELECT_TYPE, reply_markup=markup_offer_type())
-        if call.data.startswith('action_subscribe'):
+        if call.data.startswith('action:subscribe'):
             runtime_selected_mode = 'subscribe'
             bot.send_message(call.message.chat.id, MSG_SELECT_TYPE, reply_markup=markup_offer_type())
-        if call.data.startswith('action_unsubscribe'):
+        if call.data.startswith('action:unsubscribe'):
             db_subscribe(call.message.chat.id, False)
             runtime_subscription_active = False
             bot.send_message(call.message.chat.id, MSG_UNSUBSCRIBED, reply_markup=markup_actions())
-        if call.data.startswith('type_'):
+        if call.data.startswith('type:'):
             db_add_user(call)
-            runtime_selected_offer_type = call.data.split('_')[1]
+            runtime_selected_offer_type = call.data.split(':')[1]
             choosing_payment_method(call.message)
-        if call.data.startswith('pm_'):
-            runtime_payment_method = call.data.split('_', 1)[1]
-            choosing_currency(call.message)
-        if call.data.startswith('currency_'):
-            runtime_selected_currency = call.data.split('_', 1)[1]
+        if call.data.startswith('pm:'):
+            runtime_payment_method = call.data.split(':')[1]
+            choosing_currency(call.message, runtime_payment_method)
+        if call.data.startswith('currency:'):
+            runtime_selected_currency = call.data.split(':')[1]
             if check_filled_options():
                 update_user_options(call)
                 if runtime_selected_mode == 'offers':
@@ -103,7 +103,7 @@ def choosing_payment_method(message):
         bot.reply_to(message, str(e))
 
 
-def choosing_currency(message):
+def choosing_currency(message, paymentMethod):
     try:
         bot.send_message(message.chat.id, MSG_CHOOSE_CURRENCY, reply_markup=markup_currency())
     except Exception as e:
