@@ -1,6 +1,7 @@
-# import os
+import os
 
 # os.environ['MONGODB_URI'] = 'mongodb://localhost:27017/offersBot'
+# os.environ['DEBUG'] = 'True'
 TOKEN = '1275378588:AAF3KRJxWTCsR5RXtG4H6WRkybr4Gkk-g3Y'
 APP_NAME = 'paxful-offers-bot'
 DB_NAME = 'db/offersStorage'

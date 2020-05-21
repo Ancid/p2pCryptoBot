@@ -14,7 +14,8 @@ from mongo_db.MongoManager import db_add_user, db_check_subscription, db_update_
 from offersList import make_offer_list_messages, get_offers_array, notify_subscribers
 
 bot = telebot.TeleBot(TOKEN)
-bot.remove_webhook()
+if os.environ['DEBUG'] == 'True':
+    bot.remove_webhook()
 print(bot.get_me())
 
 
@@ -134,4 +135,5 @@ def check_filled_options(currency=None):
     return globals.selected_offer_type and globals.selected_payment_method and currency
 
 
-bot.polling(none_stop=True, interval=0)
+if os.environ['DEBUG'] == 'True':
+    bot.polling(none_stop=True, interval=0)
