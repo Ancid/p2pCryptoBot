@@ -18,15 +18,19 @@ if os.environ['DEBUG'] == 'True':
     bot.remove_webhook()
 print(bot.get_me())
 
+subscription_active = globals.subscription_active
+
 
 @bot.message_handler(content_types=['text'])
 def start(message):
-    globals.subscription_active = db_check_subscription(message.chat.id)
-    bot.send_message(message.chat.id, MSG_HELLO, reply_markup=markup_actions(globals.subscription_active))
+    global runtime_subscription_active
+    globals.subscription_active = runtime_subscription_active = db_check_subscription(message.chat.id)
+    bot.send_message(message.chat.id, MSG_HELLO, reply_markup=markup_actions(runtime_subscription_active))
 
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline_offer_type(call):
+    global runtime_subscription_active
     if call.message:
         if call.data.startswith('action_search'):
             globals.selected_mode = 'offers'
@@ -36,7 +40,7 @@ def callback_inline_offer_type(call):
             bot.send_message(call.message.chat.id, MSG_SELECT_TYPE, reply_markup=markup_offer_type())
         if call.data.startswith('action_unsubscribe'):
             db_subscribe(call.message.chat.id, False)
-            globals.subscription_active = False
+            globals.subscription_active = runtime_subscription_active = False
             bot.send_message(call.message.chat.id, MSG_UNSUBSCRIBED, reply_markup=markup_actions())
         if call.data.startswith('type_'):
             db_add_user(call)
@@ -57,13 +61,13 @@ def callback_inline_offer_type(call):
                     bot.send_message(
                         call.message.chat.id,
                         MSG_OOPS,
-                        reply_markup=markup_actions(globals.subscription_active)
+                        reply_markup=markup_actions(runtime_subscription_active)
                     )
             else:
                 bot.send_message(
                     call.message.chat.id,
                     MSG_OOPS,
-                    reply_markup=markup_actions(globals.subscription_active)
+                    reply_markup=markup_actions(runtime_subscription_active)
                 )
 
 
@@ -111,14 +115,15 @@ def show_offers(message):
     if len(offer_messages):
         for msg in offer_messages:
             bot.send_message(message.chat.id, msg, parse_mode="Markdown", disable_web_page_preview=True)
-        bot.send_message(message.chat.id, MSG_OFFERS, reply_markup=markup_actions(globals.subscription_active))
+        bot.send_message(message.chat.id, MSG_OFFERS, reply_markup=markup_actions(runtime_subscription_active))
     else:
-        bot.send_message(message.chat.id, MSG_OFFERS_EMPTY, reply_markup=markup_actions(globals.subscription_active))
+        bot.send_message(message.chat.id, MSG_OFFERS_EMPTY, reply_markup=markup_actions(runtime_subscription_active))
 
 
 def process_subscription(message):
+    global runtime_subscription_active
     db_subscribe(message.chat.id, True)
-    globals.subscription_active = True
+    globals.subscription_active = runtime_subscription_active = True
     bot.send_message(
         message.chat.id,
         "Well, you subscribed for *" + globals.selected_offer_type.upper() + "* Btc offers for *" + \

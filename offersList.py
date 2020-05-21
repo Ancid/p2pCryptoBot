@@ -63,7 +63,7 @@ def notify_subscribers(current_chat_id, offer_list, offer_type, payment_method, 
         for user in subscribers:
             if user['chat_id'] != current_chat_id:
                 send_found_new_offers(user, filtered_offers)
-        bot.send_message(current_chat_id, MSG_YOU_CAN, reply_markup=markup_subscription())
+                bot.send_message(user['chat_id'], MSG_YOU_CAN, reply_markup=markup_subscription())
 
 
 def makefilter(offer_list):
