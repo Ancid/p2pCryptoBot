@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 import telebot
-import globals
 
 from config import *
 from markup.currency import markup_currency
@@ -18,48 +17,55 @@ if os.environ['DEBUG'] == 'True':
     bot.remove_webhook()
 print(bot.get_me())
 
-runtime_subscription_active = globals.subscription_active
+runtime_subscription_active = ''
+runtime_payment_method = ''
+runtime_selected_mode = ''
+runtime_selected_offer_type = ''
+runtime_selected_currency = ''
 
 
 @bot.message_handler(content_types=['text'])
 def start(message):
     global runtime_subscription_active
     runtime_subscription_active = db_check_subscription(message.chat.id)
-    globals.subscription_active = runtime_subscription_active
     bot.send_message(message.chat.id, MSG_HELLO, reply_markup=markup_actions(runtime_subscription_active))
 
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline_offer_type(call):
     global runtime_subscription_active
+    global runtime_payment_method
+    global runtime_selected_mode
+    global runtime_selected_offer_type
+    global runtime_selected_currency
+
     if runtime_subscription_active == '':
         runtime_subscription_active = db_check_subscription(call.message.chat.id)
     if call.message:
         if call.data.startswith('action_search'):
-            globals.selected_mode = 'offers'
+            runtime_selected_mode = 'offers'
             bot.send_message(call.message.chat.id, MSG_SELECT_TYPE, reply_markup=markup_offer_type())
         if call.data.startswith('action_subscribe'):
-            globals.selected_mode = 'subscribe'
+            runtime_selected_mode = 'subscribe'
             bot.send_message(call.message.chat.id, MSG_SELECT_TYPE, reply_markup=markup_offer_type())
         if call.data.startswith('action_unsubscribe'):
             db_subscribe(call.message.chat.id, False)
             runtime_subscription_active = False
-            globals.subscription_active = runtime_subscription_active
             bot.send_message(call.message.chat.id, MSG_UNSUBSCRIBED, reply_markup=markup_actions())
         if call.data.startswith('type_'):
             db_add_user(call)
-            globals.selected_offer_type = call.data.split('_')[1]
+            runtime_selected_offer_type = call.data.split('_')[1]
             choosing_payment_method(call.message)
         if call.data.startswith('pm_'):
-            globals.selected_payment_method = call.data.split('_')[1]
+            runtime_payment_method = call.data.split('_', 1)[1]
             choosing_currency(call.message)
         if call.data.startswith('currency_'):
-            globals.selected_currency = call.data.split('_', 1)[1]
-            if check_filled_options(globals.selected_currency):
+            runtime_selected_currency = call.data.split('_', 1)[1]
+            if check_filled_options():
                 update_user_options(call)
-                if globals.selected_mode == 'offers':
+                if runtime_selected_mode == 'offers':
                     show_offers(call.message)
-                elif globals.selected_mode == 'subscribe':
+                elif runtime_selected_mode == 'subscribe':
                     process_subscription(call.message)
                 else:
                     bot.send_message(
@@ -76,12 +82,18 @@ def callback_inline_offer_type(call):
 
 
 def update_user_options(call):
+    global runtime_subscription_active
+    global runtime_selected_mode
+    global runtime_payment_method
+    global runtime_selected_offer_type
+    global runtime_selected_currency
+
     user_options = {
-        'offer_type': globals.selected_offer_type,
-        'payment_method': globals.selected_payment_method,
-        'currency_code': globals.selected_currency
+        'offer_type': runtime_selected_offer_type,
+        'payment_method': runtime_payment_method,
+        'currency_code': runtime_selected_currency
     }
-    db_update_user_options(call.from_user.id, user_options)
+    db_update_user_options(call.from_user.id, user_options, runtime_selected_mode, runtime_subscription_active)
 
 
 def choosing_payment_method(message):
@@ -99,20 +111,24 @@ def choosing_currency(message):
 
 
 def show_offers(message):
+    global runtime_payment_method
+    global runtime_selected_offer_type
+    global runtime_selected_currency
+
     bot.send_message(
         message.chat.id,
-        "Well, you selected *" + globals.selected_offer_type.upper() + "* Btc offers for *" + \
-        globals.selected_payment_method.upper() + "* in *" + globals.selected_currency.upper() + \
+        "Well, you selected *" + runtime_selected_offer_type.upper() + "* Btc offers for *" + \
+        runtime_payment_method.upper() + "* in *" + runtime_selected_currency.upper() + \
         "*. Let\'s me check some offers for you...",
         parse_mode="Markdown"
     )
-    offers = get_offers_array(globals.selected_offer_type, globals.selected_payment_method, globals.selected_currency)
+    offers = get_offers_array(runtime_selected_offer_type, runtime_payment_method, runtime_selected_currency)
     notify_subscribers(
         message.chat.id,
         offers,
-        globals.selected_offer_type,
-        globals.selected_payment_method,
-        globals.selected_currency
+        runtime_selected_offer_type,
+        runtime_payment_method,
+        runtime_selected_currency
     )
     db_save_offers(offers)
     offer_messages = make_offer_list_messages(offers, SEARCH_LIMIT)
@@ -126,27 +142,32 @@ def show_offers(message):
 
 def process_subscription(message):
     global runtime_subscription_active
+    global runtime_payment_method
+    global runtime_selected_offer_type
+    global runtime_selected_currency
+
     db_subscribe(message.chat.id, True)
-    globals.subscription_active = runtime_subscription_active = True
+    runtime_subscription_active = True
     bot.send_message(
         message.chat.id,
-        "Well, you subscribed for *" + globals.selected_offer_type.upper() + "* Btc offers for *" + \
-        globals.selected_payment_method.upper() + "* in *" + globals.selected_currency.upper() + \
+        "Well, you subscribed for *" + runtime_selected_offer_type.upper() + "* Btc offers for *" + \
+        runtime_payment_method.upper() + "* in *" + runtime_selected_currency.upper() + \
         "*. I will send you notification when new offers will appear",
         parse_mode="Markdown"
     )
     bot.send_message(message.chat.id, MSG_CHECK_OFFERS, reply_markup=markup_actions(True))
 
 
-def check_filled_options(currency=None):
-    if currency is None:
-        currency = globals.selected_currency
-    print(globals.selected_offer_type)
-    print(globals.selected_payment_method)
-    print(globals.selected_currency)
-    print(currency)
+def check_filled_options():
+    global runtime_payment_method
+    global runtime_selected_offer_type
+    global runtime_selected_currency
 
-    return globals.selected_offer_type and globals.selected_payment_method and currency
+    print(runtime_selected_offer_type)
+    print(runtime_payment_method)
+    print(runtime_selected_currency)
+
+    return runtime_selected_offer_type and runtime_payment_method and runtime_selected_currency
 
 
 if os.environ['DEBUG'] == 'True':

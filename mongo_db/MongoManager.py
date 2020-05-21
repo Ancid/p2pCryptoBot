@@ -35,7 +35,7 @@ def db_check_subscription(chat_id):
     return False
 
 
-def db_update_user_options(chat_id, options):
+def db_update_user_options(chat_id, options, mode, subscription_active):
     hash_str = options['offer_type'] + options['payment_method'] + options['currency_code']
 
     options_value = {
@@ -44,13 +44,13 @@ def db_update_user_options(chat_id, options):
         "currency_code": options['currency_code'],
         "hash": hashlib.md5(hash_str.encode('utf-8')).hexdigest()
     }
-    if globals.selected_mode == 'subscribe':
-        options_value["active"] = globals.subscription_active
+    if mode == 'subscribe':
+        options_value["active"] = subscription_active
     db_users.update(
         {"chat_id": chat_id},
         {
             "$set": {
-                user_mode_collections[globals.selected_mode]: options_value
+                user_mode_collections[mode]: options_value
             }
         }
     )
