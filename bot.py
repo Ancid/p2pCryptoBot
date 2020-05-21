@@ -18,7 +18,7 @@ if os.environ['DEBUG'] == 'True':
     bot.remove_webhook()
 print(bot.get_me())
 
-subscription_active = globals.subscription_active
+runtime_subscription_active = globals.subscription_active
 
 
 @bot.message_handler(content_types=['text'])
