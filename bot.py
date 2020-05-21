@@ -141,6 +141,11 @@ def process_subscription(message):
 def check_filled_options(currency=None):
     if currency is None:
         currency = globals.selected_currency
+    print(globals.selected_offer_type)
+    print(globals.selected_payment_method)
+    print(globals.selected_currency)
+    print(currency)
+
     return globals.selected_offer_type and globals.selected_payment_method and currency
 
 
