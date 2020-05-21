@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 import hashlib
 import datetime
-
 import pymongo
-
-import globals
 
 from datetime import datetime, timedelta
 from mongo_db.db import db_users, db_offers
