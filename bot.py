@@ -160,15 +160,17 @@ def process_subscription(message):
 
 
 def check_filled_options():
-    global runtime_payment_method
+    global runtime_selected_mode
     global runtime_selected_offer_type
+    global runtime_payment_method
     global runtime_selected_currency
 
+    print(runtime_selected_mode)
     print(runtime_selected_offer_type)
     print(runtime_payment_method)
     print(runtime_selected_currency)
 
-    return runtime_selected_offer_type and runtime_payment_method and runtime_selected_currency
+    return runtime_selected_mode and runtime_selected_offer_type and runtime_payment_method and runtime_selected_currency
 
 
 if os.environ['DEBUG'] == 'True':
