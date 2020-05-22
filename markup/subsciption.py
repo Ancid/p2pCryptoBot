@@ -10,4 +10,9 @@ def markup_subscription():
         subscription_button,
     )
 
+    mp_actions.add(
+        types.InlineKeyboardButton(text="Offer search", callback_data="action:search"),
+        subscription_button,
+    )
+
     return mp_actions
