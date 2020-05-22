@@ -94,11 +94,6 @@ def db_get_subscribers(chat_id, offer_type, payment_method, currency_code):
         "subscription.active": True
     })
 
-    # columns = ['username', 'chat_id', 'subscription']
-    # results = []
-    # for row in users:
-    #     results.append(dict(zip(columns, row)))
-
     return list(users)
 
 
