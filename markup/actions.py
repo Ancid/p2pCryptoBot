@@ -2,7 +2,7 @@ from telebot import types
 
 
 def markup_actions(active=None):
-    mp_actions = types.InlineKeyboardMarkup(row_width=2)
+    mp_actions = types.InlineKeyboardMarkup(row_width=3)
     if active == True:
         mp_actions.add(
             types.InlineKeyboardButton(text="Offer search", callback_data="action:search"),
