@@ -8,6 +8,7 @@ def walk_through_subsciptions():
     if subscriptions is not None and len(subscriptions):
         for subscription in subscriptions:
             any_user = db_users.find_one({"subscription.hash": subscription['_id']})
+            print(any_user)
             offers = get_offers_array(
                 any_user['subscription']['offer_type'],
                 any_user['subscription']['payment_method'],
