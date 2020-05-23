@@ -23,6 +23,6 @@ def walk_through_subsciptions():
                 )
                 db_save_offers(offers)
                 print(
-                    'started notify ' + str(subscription['count']) + ' users ' + any_user['subscription']['offer_type'] + ' ' +
-                    any_user['subscription']['payment_method'] + ' ' + any_user['subscription']['currency_code']
+                    'Nnotify ' + str(subscription['count']) + ' users ' + any_user['subscription']['offer_type'] + '-' +
+                    any_user['subscription']['payment_method'] + '-' + any_user['subscription']['currency_code']
                 )

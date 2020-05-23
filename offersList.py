@@ -64,6 +64,7 @@ def notify_subscribers(current_chat_id, offer_list, offer_type, payment_method, 
     new_offers_filter = makefilter(offer_list)
     filtered_offers = list(filter(new_offers_filter, offer_list))
 
+    print('offers for notify ' + str(len(filtered_offers)))
     if len(filtered_offers):
         for user in subscribers:
             if user['chat_id'] != current_chat_id:
