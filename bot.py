@@ -138,7 +138,7 @@ def show_offers(message):
     if len(offer_messages):
         for msg in offer_messages:
             bot.send_message(message.chat.id, msg, parse_mode="Markdown", disable_web_page_preview=True)
-        bot.send_message(message.chat.id, MSG_OFFERS, reply_markup=markup_actions(runtime_subscription_active))
+        bot.send_message(message.chat.id, MSG_OFFERS, reply_markup=markup_actions(db_check_subscription(message.chat.id)))
     else:
         bot.send_message(message.chat.id, MSG_OFFERS_EMPTY, reply_markup=markup_actions(runtime_subscription_active))
 
