@@ -4,6 +4,8 @@ import datetime
 import pymongo
 
 from datetime import datetime, timedelta
+
+from config import *
 from mongo_db.db import db_users, db_offers
 
 user_mode_collections = {
@@ -60,7 +62,7 @@ def db_check_new_offers(offers_list):
 
     existed_offers = db_offers.find({
         "hash": {"$in": hashes},
-        "created_at": {"$gte": datetime.today() - timedelta(days=3)}
+        "created_at": {"$gte": datetime.today() - timedelta(days=OFFERS_DAYS_FILTER)}
     })
 
     results = []
