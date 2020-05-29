@@ -101,3 +101,11 @@ def db_get_subscribers(chat_id, offer_type, payment_method, currency_code):
 
 def db_get_groupped_subscriptions():
     return list(db_users.aggregate([{"$group": {"_id": "$subscription.hash", "count": {"$sum": 1}}}]))
+
+
+def db_get_user(chat_id):
+    user = db_users.find_one({
+        "chat_id": chat_id
+    })
+
+    return user

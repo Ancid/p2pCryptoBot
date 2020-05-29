@@ -20,6 +20,9 @@ def get_offers_array(offer_type, payment_method=False, currency_code=False):
     body += '&offer_type=' + offer_type
     if currency_code:
         body += '&currency_code=' + str(currency_code)
+        if currency_code == 'USD':
+            body += '&visitor_country_iso=US'
+
     if payment_method:
         body += '&payment_method=' + str(payment_method)
     apiseal = hmac.new(API_SECRET, msg=body.encode('UTF-8'), digestmod=hashlib.sha256).hexdigest()

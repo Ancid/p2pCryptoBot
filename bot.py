@@ -11,7 +11,7 @@ from messages import *
 from markup.actions import markup_actions
 from markup.offerType import markup_offer_type
 from mongo_db.MongoManager import db_add_user, db_check_subscription, db_update_user_options, db_subscribe, \
-    db_save_offers
+    db_save_offers, db_get_user
 from offersList import make_offer_list_messages, get_offers_array, notify_subscribers
 
 bot = telebot.TeleBot(TOKEN)
@@ -113,34 +113,30 @@ def choosing_currency(message, paymentMethod):
 
 
 def show_offers(message):
-    global runtime_payment_method
-    global runtime_selected_offer_type
-    global runtime_selected_currency
-    global runtime_subscription_active
+    user = db_get_user(message.chat.id)
+    payment_method = user['search']['payment_method']
+    offer_type = user['search']['offer_type']
+    currency = user['search']['currency_code']
+    subscription_active = user['subscription']['active']
 
     bot.send_message(
         message.chat.id,
-        "Well, you selected *" + runtime_selected_offer_type.upper() + "* Btc offers for *" + \
-        runtime_payment_method.upper() + "* in *" + runtime_selected_currency.upper() + \
-        "*. Let\'s me check some offers for you...",
+        "Well, you selected *" + offer_type.upper() + "* Btc offers for *" + payment_method.upper() + "* in *" + \
+        currency.upper() + "*. Let\'s me check some offers for you...",
         parse_mode="Markdown"
     )
-    offers = get_offers_array(runtime_selected_offer_type, runtime_payment_method, runtime_selected_currency)
-    notify_subscribers(
-        message.chat.id,
-        offers,
-        runtime_selected_offer_type,
-        runtime_payment_method,
-        runtime_selected_currency
-    )
+    offers = get_offers_array(offer_type, payment_method, currency)
+    notify_subscribers(message.chat.id, offers, offer_type, payment_method, currency)
+
     db_save_offers(offers)
     offer_messages = make_offer_list_messages(offers, SEARCH_LIMIT)
     if len(offer_messages):
         for msg in offer_messages:
             bot.send_message(message.chat.id, msg, parse_mode="Markdown", disable_web_page_preview=True)
-        bot.send_message(message.chat.id, MSG_OFFERS, reply_markup=markup_actions(db_check_subscription(message.chat.id)))
+        bot.send_message(message.chat.id, MSG_OFFERS,
+                         reply_markup=markup_actions(db_check_subscription(message.chat.id)))
     else:
-        bot.send_message(message.chat.id, MSG_OFFERS_EMPTY, reply_markup=markup_actions(runtime_subscription_active))
+        bot.send_message(message.chat.id, MSG_OFFERS_EMPTY, reply_markup=markup_actions(subscription_active))
 
 
 def process_subscription(message):

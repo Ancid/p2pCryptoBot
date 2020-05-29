@@ -3,12 +3,13 @@ from telebot import types
 
 def markup_payment_method():
     payment_methods = {
-        "Bank Transfer": "bank-transfer",
-        "Western Union": "western-union",
+        # "Western Union": "western-union",
         "SEPA": "sepa",
         "PayPal": "paypal",
-        "Revolut": "revolut",
+        "Bank Transfer": "bank-transfer",
         "Amazon GC": "amazon-gift-card",
+        "Revolut": "revolut",
+        "Cash deposit": "cash-deposit-to-bank",
     }
 
     mk_payment_method = types.InlineKeyboardMarkup(row_width=3)
