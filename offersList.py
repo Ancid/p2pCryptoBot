@@ -72,7 +72,7 @@ def notify_subscribers(current_chat_id, offer_list, offer_type, payment_method, 
                 try:
                     bot.send_message(user['chat_id'], MSG_YOU_CAN, parse_mode="Markdown")
                 except telebot.apihelper.ApiException:
-                    print('User banned a bot: ' + user['chat_id'])
+                    print('User banned a bot: ' + str(user['chat_id']))
                     pass
 
 
