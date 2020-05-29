@@ -3,7 +3,7 @@
 # os.environ['MONGODB_URI'] = 'mongodb://localhost:27017/offersBot'
 # os.environ['DEBUG'] = 'True'
 # TOKEN = '1275378588:AAF3KRJxWTCsR5RXtG4H6WRkybr4Gkk-g3Y'
-TOKEN = '1206885593:AAF5brlVz7NXubboep2B-86RW_TqmFnIDw0'
+TOKEN = '1206885593:AAH4kKVpyM-BdznBGmaHmriMfoF2PR49sBc'
 APP_NAME = 'paxful-offers-bot'
 DB_NAME = 'db/offersStorage'
 API_KEY = "Z4TPCz2VKHTlRAMAXxLqgHS18MT7eLbd"

@@ -61,9 +61,9 @@ def db_check_new_offers(offers_list):
         hashes.append(offer['offer_id'])
 
     existed_offers = db_offers.find({
-        "hash": {"$in": hashes},
-        "created_at": {"$gte": datetime.today() - timedelta(days=OFFERS_DAYS_FILTER)}
+        "hash": {"$in": hashes}
     })
+        # "created_at": {"$gte": datetime.today() - timedelta(days=OFFERS_DAYS_FILTER)}
 
     results = []
     if existed_offers.count():
