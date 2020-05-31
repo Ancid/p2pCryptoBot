@@ -19,9 +19,18 @@ def db_add_user(call):
         db_users.insert_one({
             "chat_id": call.from_user.id,
             "username": call.from_user.username,
+            "active_mode": False,
             "subscription": {"active": False},
             "search": {}
         })
+
+
+def db_update_user_mode(chat_id, mode):
+    db_users.update({"chat_id": chat_id}, {"$set": {"active_mode": mode}})
+
+
+def db_update_offer_type(chat_id, mode):
+    db_users.update({"chat_id": chat_id}, {"$set": {"active_mode": mode}})
 
 
 def db_check_subscription(chat_id):
@@ -34,7 +43,11 @@ def db_check_subscription(chat_id):
     return False
 
 
-def db_update_user_options(chat_id, options, mode, subscription_active):
+def db_update_subscription(chat_id, active):
+    db_users.update({"chat_id": chat_id}, {"$set": {"subscription.active": active}})
+
+
+def db_update_user_options(chat_id, options):
     hash_str = options['offer_type'] + options['payment_method'] + options['currency_code']
 
     options_value = {
@@ -43,13 +56,12 @@ def db_update_user_options(chat_id, options, mode, subscription_active):
         "currency_code": options['currency_code'],
         "hash": hashlib.md5(hash_str.encode('utf-8')).hexdigest()
     }
-    if mode == 'subscribe':
-        options_value["active"] = subscription_active
+    user = db_users.find_one({"chat_id": chat_id})
     db_users.update(
         {"chat_id": chat_id},
         {
             "$set": {
-                user_mode_collections[mode]: options_value
+                user['active_mode']: options_value
             }
         }
     )
@@ -83,10 +95,6 @@ def db_save_offers(offers_list):
                 )
             except pymongo.errors.DuplicateKeyError:
                 pass
-
-
-def db_subscribe(chat_id, active):
-    db_users.update({"chat_id": chat_id}, {"$set": {"subscription.active": active}})
 
 
 def db_get_subscribers(chat_id, offer_type, payment_method, currency_code):

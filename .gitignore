@@ -1,3 +1,4 @@
 /.idea/
 /HerokuBot.iml
+markup/__pycache__/
 __pycache__/

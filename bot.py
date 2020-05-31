@@ -10,8 +10,8 @@ from markup.paymentMethod import markup_payment_method
 from messages import *
 from markup.actions import markup_actions
 from markup.offerType import markup_offer_type
-from mongo_db.MongoManager import db_add_user, db_check_subscription, db_update_user_options, db_subscribe, \
-    db_save_offers, db_get_user
+from mongo_db.MongoManager import db_add_user, db_check_subscription, db_update_user_options, \
+    db_save_offers, db_get_user, db_update_subscription, db_update_user_mode
 from offersList import make_offer_list_messages, get_offers_array, notify_subscribers
 
 bot = telebot.TeleBot(TOKEN)
@@ -19,40 +19,31 @@ if os.environ['DEBUG'] == 'True':
     bot.remove_webhook()
 print(bot.get_me())
 
-runtime_subscription_active = ''
 runtime_payment_method = ''
-runtime_selected_mode = ''
 runtime_selected_offer_type = ''
 runtime_selected_currency = ''
 
 
 @bot.message_handler(content_types=['text'])
 def start(message):
-    global runtime_subscription_active
-    runtime_subscription_active = db_check_subscription(message.chat.id)
-    bot.send_message(message.chat.id, MSG_HELLO, reply_markup=markup_actions(runtime_subscription_active))
+    bot.send_message(message.chat.id, MSG_HELLO, reply_markup=markup_actions(db_check_subscription(message.chat.id)))
 
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline_offer_type(call):
-    global runtime_subscription_active
     global runtime_payment_method
-    global runtime_selected_mode
     global runtime_selected_offer_type
     global runtime_selected_currency
 
-    if runtime_subscription_active == '':
-        runtime_subscription_active = db_check_subscription(call.message.chat.id)
     if call.message:
         if call.data.startswith('action:search'):
-            runtime_selected_mode = 'offers'
+            db_update_user_mode(call.message.chat.id, MODE_SEARCH)
             bot.send_message(call.message.chat.id, MSG_SELECT_TYPE, reply_markup=markup_offer_type())
         if call.data.startswith('action:subscribe'):
-            runtime_selected_mode = 'subscribe'
+            db_update_user_mode(call.message.chat.id, MODE_SUBSCRIBE)
             bot.send_message(call.message.chat.id, MSG_SELECT_TYPE, reply_markup=markup_offer_type())
         if call.data.startswith('action:unsubscribe'):
-            db_subscribe(call.message.chat.id, False)
-            runtime_subscription_active = False
+            db_update_subscription(call.message.chat.id, False)
             bot.send_message(call.message.chat.id, MSG_UNSUBSCRIBED, reply_markup=markup_actions())
         if call.data.startswith('type:'):
             db_add_user(call)
@@ -62,30 +53,31 @@ def callback_inline_offer_type(call):
             runtime_payment_method = call.data.split(':')[1]
             choosing_currency(call.message, runtime_payment_method)
         if call.data.startswith('currency:'):
+            user = db_get_user(call.message.chat.id)
+            subscription_active = user['subscription']['active']
+            active_mode = user['active_mode']
             runtime_selected_currency = call.data.split(':')[1]
-            if check_filled_options():
-                update_user_options(call)
-                if runtime_selected_mode == 'offers':
-                    show_offers(call.message)
-                elif runtime_selected_mode == 'subscribe':
-                    process_subscription(call.message)
-                else:
-                    bot.send_message(
-                        call.message.chat.id,
-                        MSG_OOPS,
-                        reply_markup=markup_actions(runtime_subscription_active)
-                    )
+            # if check_filled_options():
+            update_user_options(call)
+            if active_mode == MODE_SEARCH:
+                show_offers(call.message)
+            elif active_mode == MODE_SUBSCRIBE:
+                process_subscription(call.message)
             else:
                 bot.send_message(
                     call.message.chat.id,
                     MSG_OOPS,
-                    reply_markup=markup_actions(runtime_subscription_active)
+                    reply_markup=markup_actions(subscription_active)
                 )
+            # else:
+            #     bot.send_message(
+            #         call.message.chat.id,
+            #         MSG_OOPS,
+            #         reply_markup=markup_actions(subscription_active)
+            #     )
 
 
 def update_user_options(call):
-    global runtime_subscription_active
-    global runtime_selected_mode
     global runtime_payment_method
     global runtime_selected_offer_type
     global runtime_selected_currency
@@ -95,7 +87,7 @@ def update_user_options(call):
         'payment_method': runtime_payment_method,
         'currency_code': runtime_selected_currency
     }
-    db_update_user_options(call.from_user.id, user_options, runtime_selected_mode, runtime_subscription_active)
+    db_update_user_options(call.from_user.id, user_options)
 
 
 def choosing_payment_method(message):
@@ -140,13 +132,11 @@ def show_offers(message):
 
 
 def process_subscription(message):
-    global runtime_subscription_active
     global runtime_payment_method
     global runtime_selected_offer_type
     global runtime_selected_currency
 
-    db_subscribe(message.chat.id, True)
-    runtime_subscription_active = True
+    db_update_subscription(message.chat.id, True)
     bot.send_message(
         message.chat.id,
         "Well, you subscribed for *" + runtime_selected_offer_type.upper() + "* Btc offers for *" + \
