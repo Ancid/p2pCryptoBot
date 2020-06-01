@@ -66,7 +66,7 @@ def callback_inline_offer_type(call):
                 if active_mode == MODE_SEARCH:
                     show_offers(call.message.chat.id)
                 elif active_mode == MODE_SUBSCRIBE:
-                    process_subscription(call.message)
+                    process_subscription(call.message.chat.id)
                 else:
                     bot.send_message(
                         call.message.chat.id,
