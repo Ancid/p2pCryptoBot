@@ -73,12 +73,12 @@ def callback_inline_offer_type(call):
                         MSG_OOPS,
                         reply_markup=markup_actions(subscription_active)
                     )
-            # else:
-            #     bot.send_message(
-            #         call.message.chat.id,
-            #         MSG_OOPS,
-            #         reply_markup=markup_actions(subscription_active)
-            #     )
+            else:
+                bot.send_message(
+                    call.message.chat.id,
+                    MSG_OOPS,
+                    reply_markup=markup_actions(subscription_active)
+                )
 
 
 def choosing_payment_method(message):
