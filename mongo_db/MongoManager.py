@@ -4,14 +4,7 @@ import datetime
 import pymongo
 
 from datetime import datetime, timedelta
-
-from config import *
 from mongo_db.db import db_users, db_offers
-
-user_mode_collections = {
-    'subscribe': 'subscription',
-    'offers': 'search',
-}
 
 
 def db_add_user(call):
@@ -29,8 +22,25 @@ def db_update_user_mode(chat_id, mode):
     db_users.update({"chat_id": chat_id}, {"$set": {"active_mode": mode}})
 
 
-def db_update_offer_type(chat_id, mode):
-    db_users.update({"chat_id": chat_id}, {"$set": {"active_mode": mode}})
+def db_get_selected_mode(chat_id):
+    mode = db_users.find_one({"chat_id": chat_id})
+
+    return mode['active_mode']
+
+
+def db_update_offer_type(chat_id, offer_type):
+    mode = db_get_selected_mode(chat_id)
+    db_users.update({"chat_id": chat_id}, {"$set": {mode + ".offer_type": offer_type}})
+
+
+def db_update_payment_method(chat_id, method):
+    mode = db_get_selected_mode(chat_id)
+    db_users.update({"chat_id": chat_id}, {"$set": {mode + ".payment_method": method}})
+
+
+def db_update_currency(chat_id, currency):
+    mode = db_get_selected_mode(chat_id)
+    db_users.update({"chat_id": chat_id}, {"$set": {mode + ".currency_code": currency}})
 
 
 def db_check_subscription(chat_id):
@@ -75,12 +85,12 @@ def db_check_new_offers(offers_list):
     existed_offers = db_offers.find({
         "hash": {"$in": hashes}
     })
-        # "created_at": {"$gte": datetime.today() - timedelta(days=OFFERS_DAYS_FILTER)}
+    # "created_at": {"$gte": datetime.today() - timedelta(days=OFFERS_DAYS_FILTER)}
 
     results = []
     if existed_offers.count():
         for offer in existed_offers:
-            results.append(offer['hash'] )
+            results.append(offer['hash'])
 
     return results
 
