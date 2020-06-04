@@ -32,7 +32,7 @@ async def check_subscriptions(request):
     walk_through_subsciptions()
     return web.Response(text="Done")
 
-app.router.add_post("/{token}/", webhook)
+app.router.add_post("/{token}", webhook)
 app.router.add_get("/", index)
 app.router.add_get("/reset_webhook", reset_webhook)
 app.router.add_get("/check/subscriptions", check_subscriptions)
