@@ -1,5 +1,7 @@
 # import flask
 import os
+
+import aiohttp
 from telebot import types
 from config import *
 from bot import bot
@@ -16,7 +18,7 @@ async def webhook(request):
     return web.Response()
 
 
-async def index():
+async def index(request):
     return web.Response(text="Hello from OffersBot!")
 
 
