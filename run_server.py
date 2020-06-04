@@ -1,5 +1,5 @@
 # import flask
-# import os
+import os
 from telebot import types
 from config import *
 from bot import bot
