@@ -22,13 +22,13 @@ async def index(request):
     return web.Response(text="Hello from OffersBot!")
 
 
-async def reset_webhook():
+async def reset_webhook(request):
     bot.remove_webhook()
     bot.set_webhook(url="https://{}.herokuapp.com/{}".format(APP_NAME, TOKEN))
     return web.Response(text="Hello from OffersBot!")
 
 
-async def check_subscriptions():
+async def check_subscriptions(request):
     walk_through_subsciptions()
     return web.Response(text="Done")
 
