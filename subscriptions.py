@@ -5,7 +5,6 @@ from offersList import get_offers_array, notify_subscribers
 
 def walk_through_subsciptions():
     subscriptions = db_get_groupped_subscriptions()
-    print(subscriptions)
     if subscriptions is not None and len(subscriptions):
         for subscription in subscriptions:
             any_user = db_users.find_one({"subscription.hash": subscription['_id']})
@@ -15,7 +14,10 @@ def walk_through_subsciptions():
                     any_user['subscription']['payment_method'],
                     any_user['subscription']['currency_code']
                 )
-                print(",".join(off['hash'] for off in offers))
+                print(
+                    'Notify ' + str(subscription['count']) + ' users ' + any_user['subscription']['offer_type'] + '-' +
+                    any_user['subscription']['payment_method'] + '-' + any_user['subscription']['currency_code']
+                )
                 notify_subscribers(
                     None,
                     offers,
@@ -24,7 +26,3 @@ def walk_through_subsciptions():
                     any_user['subscription']['currency_code']
                 )
                 db_save_offers(offers)
-                print(
-                    'Notify ' + str(subscription['count']) + ' users ' + any_user['subscription']['offer_type'] + '-' +
-                    any_user['subscription']['payment_method'] + '-' + any_user['subscription']['currency_code']
-                )

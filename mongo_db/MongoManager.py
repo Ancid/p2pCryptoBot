@@ -40,7 +40,10 @@ def db_update_payment_method(chat_id, method):
 
 def db_update_currency(chat_id, currency):
     mode = db_get_selected_mode(chat_id)
-    db_users.update({"chat_id": chat_id}, {"$set": {mode + ".currency_code": currency}})
+    user = db_get_user(chat_id)
+    hash_str = user[mode]['offer_type'] + user[mode]['payment_method'] + user[mode]['currency_code']
+    hash = hashlib.md5(hash_str.encode('utf-8')).hexdigest()
+    db_users.update({"chat_id": chat_id}, {"$set": {mode + ".currency_code": currency, mode + ".hash": hash}})
 
 
 def db_check_subscription(chat_id):
@@ -59,7 +62,6 @@ def db_update_subscription(chat_id, active):
 
 def db_update_user_options(chat_id, options):
     hash_str = options['offer_type'] + options['payment_method'] + options['currency_code']
-
     options_value = {
         "offer_type": options['offer_type'],
         "payment_method": options['payment_method'],
@@ -107,7 +109,7 @@ def db_save_offers(offers_list):
                 pass
 
 
-def db_get_subscribers(chat_id, offer_type, payment_method, currency_code):
+def db_get_subscribers(offer_type, payment_method, currency_code):
     hash_str = offer_type + payment_method + currency_code
     users = db_users.find({
         "subscription.hash": hashlib.md5(hash_str.encode('utf-8')).hexdigest(),
@@ -127,3 +129,15 @@ def db_get_user(chat_id):
     })
 
     return user
+
+
+def update_user_hashes():
+    users = db_users.find({'subscription.active': True})
+    for user in users:
+        # print('chat_id: '+str(user['chat_id']))
+        # print('name: '+user['username'])
+        # print('old: '+user['subscription']['hash'])
+        hash_str = user['subscription']['offer_type'] + user['subscription']['payment_method'] + user['subscription']['currency_code']
+        hash = hashlib.md5(hash_str.encode('utf-8')).hexdigest()
+        # print('new: '+hash)
+        # print('-----')

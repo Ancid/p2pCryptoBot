@@ -7,7 +7,6 @@ import telebot
 from telebot.apihelper import ApiException
 
 from config import *
-from markup.subsciption import markup_subscription
 from messages import MSG_YOU_CAN
 from mongo_db.MongoManager import db_check_new_offers, db_get_subscribers
 
@@ -63,17 +62,18 @@ def make_offer_list_messages(offer_list, limit=None):
 
 
 def notify_subscribers(current_chat_id, offer_list, offer_type, payment_method, currency_code):
-    subscribers = db_get_subscribers(current_chat_id, offer_type, payment_method, currency_code)
+    subscribers = db_get_subscribers(offer_type, payment_method, currency_code)
     new_offers_filter = makefilter(offer_list)
     filtered_offers = list(filter(new_offers_filter, offer_list))
 
-    print('offers for notify ' + str(len(filtered_offers)))
+    print(str(len(filtered_offers)) + ' offers for notify ')
     if len(filtered_offers):
         for user in subscribers:
             if user['chat_id'] != current_chat_id:
                 send_found_new_offers(user, filtered_offers)
                 try:
                     bot.send_message(user['chat_id'], MSG_YOU_CAN, parse_mode="Markdown")
+                    print('offers sent')
                 except telebot.apihelper.ApiException:
                     print('User banned a bot: ' + str(user['chat_id']))
                     pass

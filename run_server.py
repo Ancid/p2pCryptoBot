@@ -1,9 +1,12 @@
+import hashlib
+
 import flask
 from telebot import types
 from config import *
 from bot import bot
 import os
 
+from mongo_db.db import db_users
 from subscriptions import walk_through_subsciptions
 
 server = flask.Flask(__name__)
