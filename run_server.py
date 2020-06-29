@@ -43,7 +43,7 @@ app.router.add_get("/", index)
 app.router.add_get("/reset_webhook", reset_webhook)
 app.router.add_get("/check/subscriptions", check_subscriptions)
 app.router.add_get("/alias", check_subscriptions)
-app.router.add_get("/bench", bench)
+# app.router.add_get("/bench", bench)
 
 if __name__ == "__main__":
     web.run_app(app, host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
