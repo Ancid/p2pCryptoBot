@@ -34,7 +34,7 @@ def callback_inline_offer_type(call):
             db_update_user_mode(call.message.chat.id, MODE_SEARCH)
             if check_filled_options(user, MODE_SEARCH):
                 # ask the same search
-                message = "Do you want to search *" + user[MODE_SEARCH]['offer_type'].upper() + \
+                message = "Would you like to search for *" + user[MODE_SEARCH]['offer_type'].upper() + \
                           "* Btc offers for *" + user[MODE_SEARCH]['payment_method'].upper() + "* in *" + \
                           user[MODE_SEARCH]['currency_code'].upper() + "*?"
                 bot.send_message(call.message.chat.id, message, reply_markup=markup_same_search(), parse_mode="Markdown")
@@ -126,9 +126,9 @@ def process_subscription(chat_id):
     user = db_get_user(chat_id)
     bot.send_message(
         chat_id,
-        "Well, you subscribed for *" + user[MODE_SUBSCRIBE]['offer_type'].upper() + "* Btc offers for *" + \
+        "Well, you've subscribed for *" + user[MODE_SUBSCRIBE]['offer_type'].upper() + "* Btc offers for *" + \
         user[MODE_SUBSCRIBE]['payment_method'].upper() + "* in *" + user[MODE_SUBSCRIBE]['currency_code'].upper() + \
-        "*. I will send you notification when new offers will appear",
+        "*. I will notify you when new offers become available.",
         parse_mode="Markdown"
     )
     bot.send_message(chat_id, MSG_CHECK_OFFERS, reply_markup=markup_actions(True))
