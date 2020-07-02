@@ -23,6 +23,7 @@ print(bot.get_me())
 
 @bot.message_handler(content_types=['text'])
 def start(message):
+    db_add_user(message.from_user.id, message.from_user.username)
     bot.send_message(message.chat.id, MSG_HELLO, reply_markup=markup_actions(db_check_subscription(message.chat.id)))
 
 
@@ -51,7 +52,6 @@ def callback_inline_offer_type(call):
             db_update_subscription(call.message.chat.id, False)
             bot.send_message(call.message.chat.id, MSG_UNSUBSCRIBED, reply_markup=markup_actions())
         if call.data.startswith('type:'):
-            db_add_user(call)
             db_update_offer_type(call.message.chat.id, call.data.split(':')[1])
             choosing_payment_method(call.message)
         if call.data.startswith('pm:'):
@@ -61,8 +61,11 @@ def callback_inline_offer_type(call):
             user = db_get_user(call.message.chat.id)
             subscription_active = user['subscription']['active']
             active_mode = user['active_mode']
-            db_update_currency(call.message.chat.id, call.data.split(':')[1])
-            if check_filled_options(user, user['active_mode']):
+            # Because should wait for currency update
+            if check_filled_options(
+                    db_update_currency(call.message.chat.id, call.data.split(':')[1]),
+                    user['active_mode']
+            ):
                 if active_mode == MODE_SEARCH:
                     show_offers(call.message.chat.id)
                 elif active_mode == MODE_SUBSCRIBE:
@@ -104,8 +107,8 @@ def show_offers(chat_id):
 
     bot.send_message(
         chat_id,
-        "Well, you selected *" + offer_type.upper() + "* Btc offers for *" + payment_method.upper() + "* in *" + \
-        currency.upper() + "*. Let\'s me check some offers for you...",
+        "Great! You’ve selected *" + offer_type.upper() + "* Btc offers for *" + payment_method.upper() + "* in *" + \
+        currency.upper() + "*. Let me check if I can find some offers for you...",
         parse_mode="Markdown"
     )
     offers = get_offers_array(offer_type, payment_method, currency)
@@ -126,16 +129,17 @@ def process_subscription(chat_id):
     user = db_get_user(chat_id)
     bot.send_message(
         chat_id,
-        "Well, you've subscribed for *" + user[MODE_SUBSCRIBE]['offer_type'].upper() + "* Btc offers for *" + \
+        "Awesome!  I’ll let you know when new *" + user[MODE_SUBSCRIBE]['offer_type'].upper() + "* Btc offers for *" + \
         user[MODE_SUBSCRIBE]['payment_method'].upper() + "* in *" + user[MODE_SUBSCRIBE]['currency_code'].upper() + \
-        "*. I will notify you when new offers become available.",
+        "* pop up.",
         parse_mode="Markdown"
     )
     bot.send_message(chat_id, MSG_CHECK_OFFERS, reply_markup=markup_actions(True))
 
 
 def check_filled_options(user, mode):
-    return mode and user[mode]['offer_type'] and user[mode]['payment_method'] and user[mode]['currency_code']
+    return mode and (user[mode]['offer_type'] or False) \
+           and (user[mode]['payment_method'] or False) and (user[mode]['currency_code'] or False)
 
 
 if os.environ['DEBUG'] == 'True':

@@ -7,14 +7,25 @@ from datetime import datetime, timedelta
 from mongo_db.db import db_users, db_offers
 
 
-def db_add_user(call):
-    if not db_users.find_one({"chat_id": call.from_user.id}):
+def db_add_user(chat_id, username):
+    if not db_users.find_one({"chat_id": chat_id}):
         db_users.insert_one({
-            "chat_id": call.from_user.id,
-            "username": call.from_user.username,
+            "chat_id": chat_id,
+            "username": username,
             "active_mode": False,
-            "subscription": {"active": False},
-            "search": {}
+            "subscription": {
+                "active": False,
+                "offer_type": False,
+                "payment_method": False,
+                "currency_code": False,
+                "hash": False
+            },
+            "search": {
+                "offer_type": False,
+                "payment_method": False,
+                "currency_code": False,
+                "hash": False
+            }
         })
 
 
@@ -41,9 +52,11 @@ def db_update_payment_method(chat_id, method):
 def db_update_currency(chat_id, currency):
     mode = db_get_selected_mode(chat_id)
     user = db_get_user(chat_id)
-    hash_str = user[mode]['offer_type'] + user[mode]['payment_method'] + user[mode]['currency_code']
+    hash_str = user[mode]['offer_type'] + user[mode]['payment_method'] + currency
     hash = hashlib.md5(hash_str.encode('utf-8')).hexdigest()
     db_users.update({"chat_id": chat_id}, {"$set": {mode + ".currency_code": currency, mode + ".hash": hash}})
+
+    return db_get_user(chat_id)
 
 
 def db_check_subscription(chat_id):
@@ -57,7 +70,10 @@ def db_check_subscription(chat_id):
 
 
 def db_update_subscription(chat_id, active):
-    db_users.update({"chat_id": chat_id}, {"$set": {"subscription.active": active}})
+    db_users.update(
+        {"chat_id": chat_id},
+        {"$set": {"subscription.active": active, "subscription.updated_at": datetime.now()}}
+    )
 
 
 def db_update_user_options(chat_id, options):
@@ -137,7 +153,8 @@ def update_user_hashes():
         # print('chat_id: '+str(user['chat_id']))
         # print('name: '+user['username'])
         # print('old: '+user['subscription']['hash'])
-        hash_str = user['subscription']['offer_type'] + user['subscription']['payment_method'] + user['subscription']['currency_code']
+        hash_str = user['subscription']['offer_type'] + user['subscription']['payment_method'] + user['subscription'][
+            'currency_code']
         hash = hashlib.md5(hash_str.encode('utf-8')).hexdigest()
         # print('new: '+hash)
         # print('-----')

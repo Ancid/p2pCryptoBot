@@ -93,8 +93,9 @@ def send_found_new_offers(user, offer_list):
         messages = make_offer_list_messages(offer_list, SUBSCRIPTION_LIMIT)
         if len(messages):
             chat_id = user['chat_id']
-            update_message = "Hey! I've found some new offers for *" + user['subscription']['offer_type'].upper() + \
-                             "* Btc offers for *" + user['subscription']['payment_method'].upper() + "* with *" + \
+            update_message = "It’s your lucky day! I've found some great offers for *" + \
+                             user['subscription']['offer_type'].upper() + "* Btc offers for *" + \
+                             user['subscription']['payment_method'].upper() + "* with *" + \
                              user['subscription']['currency_code'].upper() + "*:"
             bot.send_message(chat_id, update_message, parse_mode="Markdown", disable_web_page_preview=True)
             for message in messages:

@@ -1,10 +1,14 @@
-MSG_HELLO = "Hey! I'm the Paxful offers bot and I'm here to help you find the best offers on paxful.com. Would you like to search for existing offers or subscribe to be notified when new offers become available?"
-MSG_CHOOSE_PAYMENT = "Choose payment method:"
-MSG_CHOOSE_CURRENCY = "Choose currency:"
-MSG_OFFERS = "Didn't get the offer you were looking for? Subscribe to be notified when new offers become available or start another search with different filters."
-MSG_OFFERS_EMPTY = "I couldn't find any offers to match your filters. Try again using different filters or subscribe to be notified when new offers become available."
-MSG_SELECT_TYPE = "Ok, first select an offer type:"
-MSG_UNSUBSCRIBED = "You have been unsubscribed:"
-MSG_CHECK_OFFERS = "If you don't want to wait for new offers you can check existing offers right away!"
-MSG_OOPS = "Oops, please try again!"
-MSG_YOU_CAN = "Type /help to see list of available commands"
+MSG_HELLO = "Hi there! I'm Paxie and I'm here to help you find the best offers on Paxful. Would " \
+            "you like to browse through existing offers or subscribe to be notified when new offers become available?"
+MSG_CHOOSE_PAYMENT = "Select your preferred payment method"
+MSG_CHOOSE_CURRENCY = "Pick your preferred currency"
+MSG_OFFERS = "Don’t see what you’re looking for? No problem! I can let you know when new offers become available or " \
+             "you can search for a different offers. "
+MSG_OFFERS_EMPTY = "Sorry, I couldn't find any offers that match what you’re looking for. Perhaps you’d like to run a" \
+                   " different search?  I can also let you know when new offers become available. "
+MSG_SELECT_TYPE = "Ok, first, select an offer type"
+MSG_UNSUBSCRIBED = "I’ve removed your subscription"
+MSG_CHECK_OFFERS = "If you’re in a hurry and can’t wait for new offers to show up, check out these other exciting " \
+                   "offers available right away! "
+MSG_OOPS = "Oops, that didn’t go as planned... Please try again!"
+MSG_YOU_CAN = "What would you like to do next? Type /help to see available commands"
