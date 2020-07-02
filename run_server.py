@@ -7,7 +7,7 @@ from config import *
 from bot import bot
 from aiohttp import web
 
-from mongo_db.MongoManager import db_add_user
+from mongo_db.MongoManager import db_add_user, db_update_user_mode
 from mongo_db.db import db_users
 from subscriptions import walk_through_subsciptions
 
@@ -37,7 +37,7 @@ async def check_subscriptions(request):
 
 async def bench(request):
     user = db_users.find_one({"chat_id": 157338802})
-    db_add_user(111111111, 'testName')
+    db_update_user_mode(157338802, 'search')
     return web.json_response({"user": user['username']})
 
 
