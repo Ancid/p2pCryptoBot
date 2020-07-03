@@ -54,7 +54,10 @@ def db_update_currency(chat_id, currency):
     user = db_get_user(chat_id)
     hash_str = user[mode]['offer_type'] + user[mode]['payment_method'] + currency
     hash = hashlib.md5(hash_str.encode('utf-8')).hexdigest()
-    db_users.update({"chat_id": chat_id}, {"$set": {mode + ".currency_code": currency, mode + ".hash": hash}})
+    db_users.update(
+        {"chat_id": chat_id},
+        {"$set": {mode + ".currency_code": currency, mode + ".hash": hash, mode + ".updated_at": datetime.now()}}
+    )
 
     return db_get_user(chat_id)
 
