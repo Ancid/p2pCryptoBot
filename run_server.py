@@ -8,7 +8,7 @@ from bot import bot
 from aiohttp import web
 
 from mongo_db.MongoManager import db_add_user, db_update_user_mode
-from mongo_db.db import db_users
+from mongo_db.db import db_users, db_bench
 from subscriptions import walk_through_subsciptions
 
 app = web.Application()
@@ -36,9 +36,25 @@ async def check_subscriptions(request):
 
 
 async def bench(request):
-    user = db_users.find_one({"chat_id": 157338802})
-    db_update_user_mode(157338802, 'search')
-    return web.json_response({"user": user['username']})
+    db_bench.insert_one({
+        "chat_id": 1,
+        "username": 'wad',
+        "active_mode": False,
+        "subscription": {
+            "active": False,
+            "offer_type": False,
+            "payment_method": False,
+            "currency_code": False,
+            "hash": False
+        },
+        "search": {
+            "offer_type": False,
+            "payment_method": False,
+            "currency_code": False,
+            "hash": False
+        }
+    })
+    return web.json_response({"result": "inserted"})
 
 
 app.router.add_post("/{token}", webhook)
