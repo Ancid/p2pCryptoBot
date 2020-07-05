@@ -4,7 +4,7 @@ import datetime
 import pymongo
 
 from datetime import datetime, timedelta
-from mongo_db.db import db_users, db_offers
+from mongo_db.db import db_users, db_offers, db_users_history
 
 
 def db_add_user(chat_id, username):
@@ -49,7 +49,7 @@ def db_update_payment_method(chat_id, method):
     db_users.update({"chat_id": chat_id}, {"$set": {mode + ".payment_method": method}})
 
 
-def db_update_currency(chat_id, currency):
+def db_update_currency(chat_id, currency, db_users_history=None):
     mode = db_get_selected_mode(chat_id)
     user = db_get_user(chat_id)
     hash_str = user[mode]['offer_type'] + user[mode]['payment_method'] + currency
@@ -77,6 +77,25 @@ def db_update_subscription(chat_id, active):
         {"chat_id": chat_id},
         {"$set": {"subscription.active": active, "subscription.updated_at": datetime.now()}}
     )
+
+
+def db_log_active_subscription(user):
+    db_users_history.insert_one({
+        "user": user["chat_id"],
+        "active": user["subscription"]["active"],
+        "currency": user["subscription"]["currency_code"],
+        "offer_type": user["subscription"]['offer_type'],
+        "payment_method": user["subscription"]['payment_method'],
+        "created_at": datetime.now()
+    })
+
+
+def db_log_deactive_subscription(chat_id):
+    db_users_history.insert_one({
+        "user": chat_id,
+        "active": False,
+        "created_at": datetime.now()
+    })
 
 
 def db_update_user_options(chat_id, options):

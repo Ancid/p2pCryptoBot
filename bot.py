@@ -13,7 +13,8 @@ from markup.actions import markup_actions
 from markup.offerType import markup_offer_type
 from offersList import make_offer_list_messages, get_offers_array, notify_subscribers
 from mongo_db.MongoManager import db_add_user, db_check_subscription, db_save_offers, db_get_user, \
-    db_update_subscription, db_update_user_mode, db_update_offer_type, db_update_payment_method, db_update_currency
+    db_update_subscription, db_update_user_mode, db_update_offer_type, db_update_payment_method, db_update_currency, \
+    db_log_deactive_subscription, db_log_active_subscription
 
 bot = telebot.TeleBot(TOKEN)
 if os.environ['DEBUG'] == 'True':
@@ -50,6 +51,7 @@ def callback_inline_offer_type(call):
             bot.send_message(call.message.chat.id, MSG_SELECT_TYPE, reply_markup=markup_offer_type())
         if call.data.startswith('action:unsubscribe'):
             db_update_subscription(call.message.chat.id, False)
+            db_log_deactive_subscription(call.message.chat.id)
             bot.send_message(call.message.chat.id, MSG_UNSUBSCRIBED, reply_markup=markup_actions())
         if call.data.startswith('type:'):
             db_update_offer_type(call.message.chat.id, call.data.split(':')[1])
@@ -127,6 +129,7 @@ def show_offers(chat_id):
 def process_subscription(chat_id):
     db_update_subscription(chat_id, True)
     user = db_get_user(chat_id)
+    db_log_active_subscription(user)
     bot.send_message(
         chat_id,
         "Awesome!  I’ll let you know when new *" + user[MODE_SUBSCRIBE]['offer_type'].upper() + "* Btc offers for *" + \

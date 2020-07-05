@@ -4,6 +4,7 @@ import pymongo
 
 client = pymongo.MongoClient(os.environ['MONGODB_URI'])
 db_users = client.get_database()["users"]
+db_users_history = client.get_database()["users_history"]
 db_offers = client.get_database()["offers"]
 db_bench = client.get_database()["bench"]
 
