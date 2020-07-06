@@ -51,11 +51,10 @@ def make_offer_list_messages(offer_list, limit=None):
             margin = "⬇-{0} {1}".format('%', offer['margin']).replace("-", "")
         offer_messages.append(
             '*' + str(offer['fiat_price_per_btc']) + ' ' + str(offer['currency_code']) + '* per 1₿, ' + \
-            # str(offer['margin']) + ' ' + margin + " market price, " + 'limits ' + \
             margin + ", " + 'limits ' + \
             str(offer['fiat_amount_range_min']) + '-' + str(offer['fiat_amount_range_max']) + ' ' + \
             str(offer['currency_code']) + ', user *' + offer['offer_owner_username'] + "*\n" + \
-            offer['offer_link'] + '/?r=bot'
+            offer['offer_link'] + '?r=bot'
         )
 
     return offer_messages
