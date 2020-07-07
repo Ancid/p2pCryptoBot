@@ -2,6 +2,8 @@ import hashlib
 import hmac
 import json
 import time
+from json.decoder import JSONDecodeError
+
 import requests
 import telebot
 from telebot.apihelper import ApiException
@@ -35,8 +37,11 @@ def get_offers_array(offer_type, payment_method=False, currency_code=False):
         },
     )
 
-    response_decoded = json.loads(response.text)
-    offer_list = response_decoded['data']['offers']
+    try:
+        response_decoded = json.loads(response.text)
+        offer_list = response_decoded['data']['offers']
+    except JSONDecodeError:
+        return None
 
     return offer_list
 

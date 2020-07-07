@@ -14,15 +14,19 @@ def walk_through_subsciptions():
                     any_user['subscription']['payment_method'],
                     any_user['subscription']['currency_code']
                 )
-                print(
-                    'Notify ' + str(subscription['count']) + ' users ' + any_user['subscription']['offer_type'] + '-' +
-                    any_user['subscription']['payment_method'] + '-' + any_user['subscription']['currency_code']
-                )
-                notify_subscribers(
-                    None,
-                    offers,
-                    any_user['subscription']['offer_type'],
-                    any_user['subscription']['payment_method'],
-                    any_user['subscription']['currency_code']
-                )
-                db_save_offers(offers)
+
+                if offers is None:
+                    print("Error response from Paxful API")
+                else:
+                    print(
+                        'Notify ' + str(subscription['count']) + ' users ' + any_user['subscription']['offer_type'] + '-' +
+                        any_user['subscription']['payment_method'] + '-' + any_user['subscription']['currency_code']
+                    )
+                    notify_subscribers(
+                        None,
+                        offers,
+                        any_user['subscription']['offer_type'],
+                        any_user['subscription']['payment_method'],
+                        any_user['subscription']['currency_code']
+                    )
+                    db_save_offers(offers)

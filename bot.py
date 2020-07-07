@@ -114,16 +114,23 @@ def show_offers(chat_id):
         parse_mode="Markdown"
     )
     offers = get_offers_array(offer_type, payment_method, currency)
-    notify_subscribers(chat_id, offers, offer_type, payment_method, currency)
-
-    db_save_offers(offers)
-    offer_messages = make_offer_list_messages(offers, SEARCH_LIMIT)
-    if len(offer_messages):
-        for msg in offer_messages:
-            bot.send_message(chat_id, msg, parse_mode="Markdown", disable_web_page_preview=True)
-        bot.send_message(chat_id, MSG_OFFERS, reply_markup=markup_actions(db_check_subscription(chat_id)))
+    if offers is None:
+        bot.send_message(
+            chat_id,
+            "Oops. Looks like Paxful doesn't respond for now. Try again later",
+            parse_mode="Markdown",
+            disable_web_page_preview=True
+        )
     else:
-        bot.send_message(chat_id, MSG_OFFERS_EMPTY, reply_markup=markup_actions(subscription_active))
+        notify_subscribers(chat_id, offers, offer_type, payment_method, currency)
+        db_save_offers(offers)
+        offer_messages = make_offer_list_messages(offers, SEARCH_LIMIT)
+        if len(offer_messages):
+            for msg in offer_messages:
+                bot.send_message(chat_id, msg, parse_mode="Markdown", disable_web_page_preview=True)
+            bot.send_message(chat_id, MSG_OFFERS, reply_markup=markup_actions(db_check_subscription(chat_id)))
+        else:
+            bot.send_message(chat_id, MSG_OFFERS_EMPTY, reply_markup=markup_actions(subscription_active))
 
 
 def process_subscription(chat_id):
