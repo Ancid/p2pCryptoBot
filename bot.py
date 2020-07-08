@@ -5,8 +5,9 @@ import os
 import telebot
 
 from config import *
-from markup.currency import markup_currency
+from markup.currency import markup_currency, CUR_MORE
 from markup.paymentMethod import markup_payment_method
+from markup.paymentMethodGroup import markup_payment_method_group
 from markup.sameSearch import markup_same_search
 from messages import *
 from markup.actions import markup_actions
@@ -55,47 +56,63 @@ def callback_inline_offer_type(call):
             bot.send_message(call.message.chat.id, MSG_UNSUBSCRIBED, reply_markup=markup_actions())
         if call.data.startswith('type:'):
             db_update_offer_type(call.message.chat.id, call.data.split(':')[1])
-            choosing_payment_method(call.message)
+            choosing_payment_method_group(call.message)
+        if call.data.startswith('pm_group:'):
+            choosing_payment_method(call.message, call.data.split(':')[1])
         if call.data.startswith('pm:'):
             db_update_payment_method(call.message.chat.id, call.data.split(':')[1])
             choosing_currency(call.message)
         if call.data.startswith('currency:'):
-            user = db_get_user(call.message.chat.id)
-            subscription_active = user['subscription']['active']
-            active_mode = user['active_mode']
-            # Because should wait for currency update
-            if check_filled_options(
-                    db_update_currency(call.message.chat.id, call.data.split(':')[1]),
-                    user['active_mode']
-            ):
-                if active_mode == MODE_SEARCH:
-                    show_offers(call.message.chat.id)
-                elif active_mode == MODE_SUBSCRIBE:
-                    process_subscription(call.message.chat.id)
+            pm = call.data.split(':')[1]
+            if pm == CUR_MORE:
+                choosing_currency(call.message, True)
+            else:
+                user = db_get_user(call.message.chat.id)
+                subscription_active = user['subscription']['active']
+                active_mode = user['active_mode']
+                # Because should wait for currency update
+                if check_filled_options(
+                        db_update_currency(call.message.chat.id, call.data.split(':')[1]),
+                        user['active_mode']
+                ):
+                    if active_mode == MODE_SEARCH:
+                        show_offers(call.message.chat.id)
+                    elif active_mode == MODE_SUBSCRIBE:
+                        process_subscription(call.message.chat.id)
+                    else:
+                        bot.send_message(
+                            call.message.chat.id,
+                            MSG_OOPS,
+                            reply_markup=markup_actions(subscription_active)
+                        )
                 else:
                     bot.send_message(
                         call.message.chat.id,
                         MSG_OOPS,
                         reply_markup=markup_actions(subscription_active)
                     )
-            else:
-                bot.send_message(
-                    call.message.chat.id,
-                    MSG_OOPS,
-                    reply_markup=markup_actions(subscription_active)
-                )
 
 
-def choosing_payment_method(message):
+def choosing_payment_method_group(message):
     try:
-        bot.send_message(message.chat.id, MSG_CHOOSE_PAYMENT, reply_markup=markup_payment_method())
+        bot.send_message(message.chat.id, MSG_CHOOSE_PAYMENT, reply_markup=markup_payment_method_group())
     except Exception as e:
         bot.reply_to(message, str(e))
 
 
-def choosing_currency(message):
+def choosing_payment_method(message, group):
     try:
-        bot.send_message(message.chat.id, MSG_CHOOSE_CURRENCY, reply_markup=markup_currency())
+        bot.edit_message_reply_markup(message.chat.id, message.message_id, reply_markup=markup_payment_method(group))
+    except Exception as e:
+        bot.reply_to(message, str(e))
+
+
+def choosing_currency(message, second=False):
+    try:
+        if second:
+            bot.edit_message_reply_markup(message.chat.id, message.message_id, reply_markup=markup_currency(second))
+        else:
+            bot.send_message(message.chat.id, MSG_CHOOSE_CURRENCY, reply_markup=markup_currency(second))
     except Exception as e:
         bot.reply_to(message, str(e))
 
