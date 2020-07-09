@@ -1,10 +1,10 @@
 from telebot import types
 
-PMG_GIFT_CARD = "gift-card"
-PMG_ONLINE_WALLET = "online-wallet"
-PMG_BANK_TRANSFER = "bank-transfer"
-PMG_CASH = "cash"
-PMG_DEBIT_CREDIT = "debit-credit"
+PMG_GIFT_CARD = "gift-cards"
+PMG_ONLINE_WALLET = "online-transfers"
+PMG_BANK_TRANSFER = "bank-transfers"
+PMG_CASH = "cash-deposits"
+PMG_DEBIT_CREDIT = "debitcredit-cards"
 
 
 def markup_payment_method_group():

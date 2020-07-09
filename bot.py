@@ -5,8 +5,9 @@ import os
 import telebot
 
 from config import *
+from markup.actionSearch import markup_search_actions
 from markup.currency import markup_currency, CUR_MORE
-from markup.paymentMethod import markup_payment_method
+from markup.paymentMethod import markup_payment_method, PAYMENT_METHODS
 from markup.paymentMethodGroup import markup_payment_method_group
 from markup.sameSearch import markup_same_search
 from messages import *
@@ -15,7 +16,7 @@ from markup.offerType import markup_offer_type
 from offersList import make_offer_list_messages, get_offers_array, notify_subscribers
 from mongo_db.MongoManager import db_add_user, db_check_subscription, db_save_offers, db_get_user, \
     db_update_subscription, db_update_user_mode, db_update_offer_type, db_update_payment_method, db_update_currency, \
-    db_log_deactive_subscription, db_log_active_subscription
+    db_log_deactive_subscription, db_log_active_subscription, db_update_search_page
 
 bot = telebot.TeleBot(TOKEN)
 if os.environ['DEBUG'] == 'True':
@@ -43,8 +44,10 @@ def callback_inline_offer_type(call):
                 bot.send_message(call.message.chat.id, message, reply_markup=markup_same_search(), parse_mode="Markdown")
             else:
                 bot.send_message(call.message.chat.id, MSG_SELECT_TYPE, reply_markup=markup_offer_type())
+        if call.data.startswith('action:paginate_search'):
+            show_offers(call.message.chat.id, True)
         if call.data.startswith('same_check:same'):
-            show_offers(call.message.chat.id)
+            show_offers(call.message.chat.id, False, True)
         if call.data.startswith('same_check:new'):
             bot.send_message(call.message.chat.id, MSG_SELECT_TYPE, reply_markup=markup_offer_type())
         if call.data.startswith('action:subscribe'):
@@ -76,7 +79,7 @@ def callback_inline_offer_type(call):
                         user['active_mode']
                 ):
                     if active_mode == MODE_SEARCH:
-                        show_offers(call.message.chat.id)
+                        show_offers(call.message.chat.id, False, True)
                     elif active_mode == MODE_SUBSCRIBE:
                         process_subscription(call.message.chat.id)
                     else:
@@ -91,7 +94,11 @@ def callback_inline_offer_type(call):
                         MSG_OOPS,
                         reply_markup=markup_actions(subscription_active)
                     )
-
+        if call.data.startswith('search_more:'):
+            user = db_get_user(call.message.chat.id)
+            # Because should wait for currency update
+            if check_filled_options(user, user['active_mode']):
+                show_offers(call.message.chat.id, True)
 
 def choosing_payment_method_group(message):
     try:
@@ -117,7 +124,9 @@ def choosing_currency(message, second=False):
         bot.reply_to(message, str(e))
 
 
-def show_offers(chat_id):
+def show_offers(chat_id, paginated=False, reset_page=False):
+    if reset_page:
+        db_update_search_page(chat_id, 1)
     user = db_get_user(chat_id)
     payment_method = user['search']['payment_method']
     offer_type = user['search']['offer_type']
@@ -141,13 +150,24 @@ def show_offers(chat_id):
     else:
         notify_subscribers(chat_id, offers, offer_type, payment_method, currency)
         db_save_offers(offers)
-        offer_messages = make_offer_list_messages(offers, SEARCH_LIMIT)
+
+        page = False
+        if paginated and 'page' in user['search']:
+            page = int(user['search']['page'])
+            db_update_search_page(chat_id, page+1)
+
+        offer_messages = make_offer_list_messages(offers, SEARCH_LIMIT, page)
         if len(offer_messages):
             for msg in offer_messages:
                 bot.send_message(chat_id, msg, parse_mode="Markdown", disable_web_page_preview=True)
-            bot.send_message(chat_id, MSG_OFFERS, reply_markup=markup_actions(db_check_subscription(chat_id)))
+            paginate = len(offers) > SEARCH_LIMIT * (page + 1)
+            bot.send_message(
+                chat_id,
+                MSG_OFFERS,
+                reply_markup=markup_search_actions(db_check_subscription(chat_id), paginate)
+            )
         else:
-            bot.send_message(chat_id, MSG_OFFERS_EMPTY, reply_markup=markup_actions(subscription_active))
+            bot.send_message(chat_id, MSG_OFFERS_EMPTY, reply_markup=markup_search_actions(subscription_active))
 
 
 def process_subscription(chat_id):

@@ -9,6 +9,7 @@ import telebot
 from telebot.apihelper import ApiException
 
 from config import *
+from markup.paymentMethod import PAYMENT_METHODS
 from messages import MSG_YOU_CAN
 from mongo_db.MongoManager import db_check_new_offers, db_get_subscribers
 
@@ -26,6 +27,11 @@ def get_offers_array(offer_type, payment_method=False, currency_code=False):
 
     if payment_method:
         body += '&payment_method=' + str(payment_method)
+
+    payment_group = getPaymentMethodGroup(payment_method)
+    if payment_group:
+        body += '&group=' + str(payment_group)
+
     apiseal = hmac.new(API_SECRET, msg=body.encode('UTF-8'), digestmod=hashlib.sha256).hexdigest()
     body += '&apiseal=' + apiseal
     response = requests.post(
@@ -46,10 +52,23 @@ def get_offers_array(offer_type, payment_method=False, currency_code=False):
     return offer_list
 
 
-def make_offer_list_messages(offer_list, limit=None):
+def getPaymentMethodGroup(payment_method):
+    for group in PAYMENT_METHODS:
+        for pm in PAYMENT_METHODS[group]:
+            if payment_method == PAYMENT_METHODS[group][pm]:
+                return group
+
+    return False
+
+
+def make_offer_list_messages(offer_list, limit=None, page=False):
     offer_messages = []
     if limit:
-        offer_list = offer_list[:limit]
+        if page and len(offer_list) > limit:
+            start = limit * page - 1
+            offer_list = offer_list[start:start + limit]
+        else:
+            offer_list = offer_list[:limit]
     for offer in offer_list:
         margin = "⬆{0}{1} ".format('%', offer['margin']).replace("-", "")
         if str(offer['margin']).find('-') >= 0:

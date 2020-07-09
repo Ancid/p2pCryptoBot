@@ -24,13 +24,18 @@ def db_add_user(chat_id, username):
                 "offer_type": False,
                 "payment_method": False,
                 "currency_code": False,
-                "hash": False
+                "hash": False,
+                "page": 1
             }
         })
 
 
 def db_update_user_mode(chat_id, mode):
     db_users.update({"chat_id": chat_id}, {"$set": {"active_mode": mode}})
+
+
+def db_update_search_page(chat_id, page):
+    db_users.update({"chat_id": chat_id}, {"$set": {"search.page": page}})
 
 
 def db_get_selected_mode(chat_id):
