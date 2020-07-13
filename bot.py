@@ -16,7 +16,7 @@ from markup.offerType import markup_offer_type
 from offersList import make_offer_list_messages, get_offers_array, notify_subscribers
 from mongo_db.MongoManager import db_add_user, db_check_subscription, db_save_offers, db_get_user, \
     db_update_subscription, db_update_user_mode, db_update_offer_type, db_update_payment_method, db_update_currency, \
-    db_log_deactive_subscription, db_log_active_subscription, db_update_search_page
+    db_log_deactive_subscription, db_log_active_subscription, db_update_search_page, db_log_search
 
 bot = telebot.TeleBot(TOKEN)
 if os.environ['DEBUG'] == 'True':
@@ -132,6 +132,8 @@ def show_offers(chat_id, paginated=False, reset_page=False):
     offer_type = user['search']['offer_type']
     currency = user['search']['currency_code']
     subscription_active = user['subscription']['active']
+    if paginated is False:
+        db_log_search(user)
 
     bot.send_message(
         chat_id,

@@ -54,7 +54,7 @@ def db_update_payment_method(chat_id, method):
     db_users.update({"chat_id": chat_id}, {"$set": {mode + ".payment_method": method}})
 
 
-def db_update_currency(chat_id, currency, db_users_history=None):
+def db_update_currency(chat_id, currency):
     mode = db_get_selected_mode(chat_id)
     user = db_get_user(chat_id)
     hash_str = user[mode]['offer_type'] + user[mode]['payment_method'] + currency
@@ -87,10 +87,22 @@ def db_update_subscription(chat_id, active):
 def db_log_active_subscription(user):
     db_users_history.insert_one({
         "user": user["chat_id"],
+        "mode": "subscription",
         "active": user["subscription"]["active"],
-        "currency": user["subscription"]["currency_code"],
-        "offer_type": user["subscription"]['offer_type'],
-        "payment_method": user["subscription"]['payment_method'],
+        "currency": user["subscription"]["currency_code"] or False,
+        "offer_type": user["subscription"]['offer_type'] or False,
+        "payment_method": user["subscription"]['payment_method'] or False,
+        "created_at": datetime.now()
+    })
+
+
+def db_log_search(user):
+    db_users_history.insert_one({
+        "user": user["chat_id"],
+        "mode": "search",
+        "currency": user["search"]["currency_code"] or False,
+        "offer_type": user["search"]['offer_type'] or False,
+        "payment_method": user["search"]['payment_method'] or False,
         "created_at": datetime.now()
     })
 
