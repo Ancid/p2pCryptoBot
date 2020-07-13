@@ -6,7 +6,7 @@ import telebot
 
 from config import *
 from markup.actionSearch import markup_search_actions
-from markup.currency import markup_currency, CUR_MORE
+from markup.currency import markup_currency, CUR_MORE, CUR_EVEN_MORE
 from markup.paymentMethod import markup_payment_method, PAYMENT_METHODS
 from markup.paymentMethodGroup import markup_payment_method_group
 from markup.sameSearch import markup_same_search
@@ -67,8 +67,8 @@ def callback_inline_offer_type(call):
             choosing_currency(call.message)
         if call.data.startswith('currency:'):
             pm = call.data.split(':')[1]
-            if pm == CUR_MORE:
-                choosing_currency(call.message, True)
+            if pm in [CUR_MORE, CUR_EVEN_MORE]:
+                choosing_currency(call.message, pm)
             else:
                 user = db_get_user(call.message.chat.id)
                 subscription_active = user['subscription']['active']
@@ -114,12 +114,12 @@ def choosing_payment_method(message, group):
         bot.reply_to(message, str(e))
 
 
-def choosing_currency(message, second=False):
+def choosing_currency(message, page=False):
     try:
-        if second:
-            bot.edit_message_reply_markup(message.chat.id, message.message_id, reply_markup=markup_currency(second))
+        if page:
+            bot.edit_message_reply_markup(message.chat.id, message.message_id, reply_markup=markup_currency(page))
         else:
-            bot.send_message(message.chat.id, MSG_CHOOSE_CURRENCY, reply_markup=markup_currency(second))
+            bot.send_message(message.chat.id, MSG_CHOOSE_CURRENCY, reply_markup=markup_currency(page))
     except Exception as e:
         bot.reply_to(message, str(e))
 
