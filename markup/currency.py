@@ -7,9 +7,9 @@ def markup_currency(second):
     mp_currency = types.InlineKeyboardMarkup(row_width=3)
     if second:
         mp_currency.add(
-            types.InlineKeyboardButton(text="GHS", callback_data="currency:AED"),
+            types.InlineKeyboardButton(text="AED", callback_data="currency:AED"),
             types.InlineKeyboardButton(text="GHS", callback_data="currency:GHS"),
-            types.InlineKeyboardButton(text="GHS", callback_data="currency:GBP"),
+            types.InlineKeyboardButton(text="GBP", callback_data="currency:GBP"),
             types.InlineKeyboardButton(text="CHF", callback_data="currency:CHF"),
             types.InlineKeyboardButton(text="INR", callback_data="currency:INR"),
             types.InlineKeyboardButton(text="ARS", callback_data="currency:ARS"),
