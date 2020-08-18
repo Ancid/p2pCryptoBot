@@ -28,6 +28,7 @@ PAYMENT_METHODS = {
         "Cash By Mail": "cash-by-mail",
         "Western Union": "western-union",
         "Cash deposit": "cash-deposit-to-bank",
+        "Cash in person": "cash-in-person",
     },
     PMG_DEBIT_CREDIT: {
         "Bluebird American Express": "bluebird-american-express",
