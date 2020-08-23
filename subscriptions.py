@@ -18,16 +18,16 @@ async def walk_through_subsciptions():
         ioloop.close()
 
     total_time = time.time() - very_start_time
-    if os.environ['DEBUG']:
-        print('Total time: '+ str(total_time))
-    if total_time > 20:
-        print("WARNING! execution time " + str(total_time))
+    print("Subscriptions checked in: " + str(total_time) + " sec.")
+
+    return total_time
+
 
 async def process_sunscription(subscription):
     start_time = time.time()
     any_user = db_users.find_one({"subscription.hash": subscription['_id']})
     user_time = time.time() - start_time
-    if os.environ['DEBUG']:
+    if os.environ['DEBUG'] == 'True':
         print('Fetch User: '+ str(user_time))
     if any_user['subscription']['active']:
         offers_time = time.time()
@@ -51,7 +51,7 @@ async def process_sunscription(subscription):
                 any_user['subscription']['payment_method'],
                 any_user['subscription']['currency_code']
             )
-            if os.environ['DEBUG']:
+            if os.environ['DEBUG'] == 'True':
                 notify_time = time.time() - offers_time
                 print('notify time: ' + str(notify_time))
                 before_save_time = time.time()

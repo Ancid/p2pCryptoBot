@@ -32,8 +32,8 @@ async def reset_webhook(request):
 
 
 async def check_subscriptions(request):
-    await walk_through_subsciptions()
-    return web.Response(text="Done")
+    time = await walk_through_subsciptions()
+    return web.Response(text="Done in " + str(time) + " sec.")
 
 
 async def bench(request):
