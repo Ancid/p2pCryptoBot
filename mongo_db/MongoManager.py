@@ -96,7 +96,7 @@ def db_log_active_subscription(user):
     })
 
 
-def db_log_search(user):
+async def db_log_search(user):
     db_users_history.insert_one({
         "user": user["chat_id"],
         "mode": "search",

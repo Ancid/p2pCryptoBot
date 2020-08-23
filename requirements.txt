@@ -1,6 +1,5 @@
 pyTelegramBotAPI
-flask
-gunicorn
 pymongo
-requests
 aiohttp
+requests
+nest_asyncio

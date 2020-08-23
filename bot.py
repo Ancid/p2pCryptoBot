@@ -1,13 +1,12 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-import os
 
 import telebot
 
 from config import *
 from markup.actionSearch import markup_search_actions
 from markup.currency import markup_currency, CUR_MORE, CUR_EVEN_MORE
-from markup.paymentMethod import markup_payment_method, PAYMENT_METHODS
+from markup.paymentMethod import markup_payment_method
 from markup.paymentMethodGroup import markup_payment_method_group
 from markup.sameSearch import markup_same_search
 from messages import *
@@ -104,14 +103,16 @@ def choosing_payment_method_group(message):
     try:
         bot.send_message(message.chat.id, MSG_CHOOSE_PAYMENT, reply_markup=markup_payment_method_group())
     except Exception as e:
-        bot.reply_to(message, str(e))
+        print('choosing_payment_method_group error: ' + str(e))
+        bot.reply_to(message, MSG_OOPS)
 
 
 def choosing_payment_method(message, group):
     try:
         bot.edit_message_reply_markup(message.chat.id, message.message_id, reply_markup=markup_payment_method(group))
     except Exception as e:
-        bot.reply_to(message, str(e))
+        print('choosing_payment_method error: ' + str(e))
+        bot.reply_to(message, MSG_OOPS)
 
 
 def choosing_currency(message, page=False):
@@ -121,7 +122,8 @@ def choosing_currency(message, page=False):
         else:
             bot.send_message(message.chat.id, MSG_CHOOSE_CURRENCY, reply_markup=markup_currency(page))
     except Exception as e:
-        bot.reply_to(message, str(e))
+        print('choosing_currency error: ' + str(e))
+        bot.reply_to(message, MSG_OOPS)
 
 
 def show_offers(chat_id, paginated=False, reset_page=False):
@@ -132,15 +134,16 @@ def show_offers(chat_id, paginated=False, reset_page=False):
     offer_type = user['search']['offer_type']
     currency = user['search']['currency_code']
     subscription_active = user['subscription']['active']
-    if paginated is False:
-        db_log_search(user)
-
     bot.send_message(
         chat_id,
         "Great! You’ve selected *" + offer_type.upper() + "* Btc offers for *" + payment_method.upper() + "* in *" + \
         currency.upper() + "*. Let me check if I can find some offers for you...",
         parse_mode="Markdown"
     )
+
+    if paginated is False:
+        log_search(user)
+
     offers = get_offers_array(offer_type, payment_method, currency)
     if offers is None:
         bot.send_message(
@@ -191,5 +194,9 @@ def check_filled_options(user, mode):
            and (user[mode]['payment_method'] or False) and (user[mode]['currency_code'] or False)
 
 
+async def log_search(user):
+    await db_log_search(user)
+
 if os.environ['DEBUG'] == 'True':
     bot.polling(none_stop=True, interval=0)
+
