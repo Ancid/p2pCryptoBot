@@ -4,6 +4,9 @@ import datetime
 import pymongo
 
 from datetime import datetime, timedelta
+
+from pymongo.errors import DuplicateKeyError
+
 from mongo_db.db import db_users, db_offers, db_users_history
 
 
@@ -152,21 +155,20 @@ def db_check_new_offers(offers_list):
     return results
 
 
-def db_save_offers(offers_list):
+async def db_save_offers(offers_list):
     if len(offers_list):
         for offer in offers_list:
             try:
-                db_offers.insert(
+                await db_offers.insert_one(
                     {"hash": offer['offer_id'], "created_at": datetime.now()},
-                    continue_on_error=True
                 )
-            except pymongo.errors.DuplicateKeyError:
+            except DuplicateKeyError:
                 pass
 
 
-def db_get_subscribers(offer_type, payment_method, currency_code):
+async def db_get_subscribers(offer_type, payment_method, currency_code):
     hash_str = offer_type + payment_method + currency_code
-    users = db_users.find({
+    users = await db_users.find({
         "subscription.hash": hashlib.md5(hash_str.encode('utf-8')).hexdigest(),
         "subscription.active": True
     })
@@ -175,7 +177,7 @@ def db_get_subscribers(offer_type, payment_method, currency_code):
 
 
 def db_get_groupped_subscriptions():
-    return list(db_users.aggregate([{"$group": {"_id": "$subscription.hash", "count": {"$sum": 1}}}]))
+    return db_users.aggregate([{"$group": {"_id": "$subscription.hash", "count": {"$sum": 1}}}])
 
 
 def db_get_user(chat_id):

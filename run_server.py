@@ -4,11 +4,17 @@ from config import *
 from bot import bot
 from aiohttp import web
 
-from mongo_db.db import db_bench
+from mongo_db.db import db_bench, create_indexes
 from subscriptions import walk_through_subsciptions
 nest_asyncio.apply()
 
 app = web.Application()
+
+
+async def startup(_):
+    await create_indexes()
+
+app.on_startup.append(startup)
 
 
 async def webhook(request):

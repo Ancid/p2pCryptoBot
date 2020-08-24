@@ -8,6 +8,7 @@ import requests
 import telebot
 from telebot.apihelper import ApiException
 
+import aiohttp
 from config import *
 from markup.paymentMethod import PAYMENT_METHODS
 from messages import MSG_YOU_CAN
@@ -16,7 +17,7 @@ from mongo_db.MongoManager import db_check_new_offers, db_get_subscribers
 bot = telebot.TeleBot(TOKEN)
 
 
-def get_offers_array(offer_type, payment_method=False, currency_code=False):
+async def get_offers_array(offer_type, payment_method=False, currency_code=False):
     nonce = str(int(time.time()))
     body = 'apikey=' + API_KEY + '&' + 'nonce=' + nonce
     body += '&offer_type=' + offer_type
@@ -34,20 +35,18 @@ def get_offers_array(offer_type, payment_method=False, currency_code=False):
 
     apiseal = hmac.new(API_SECRET, msg=body.encode('UTF-8'), digestmod=hashlib.sha256).hexdigest()
     body += '&apiseal=' + apiseal
-    response = requests.post(
-        "https://paxful.com/api/offer/all",
-        data=body,
-        headers={
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post("https://paxful.com/api/offer/all", data=body, headers={
             'content-type': 'text/plain',
             'accept': 'application/json'
-        },
-    )
+        }) as response:
 
-    try:
-        response_decoded = json.loads(response.text)
-        offer_list = response_decoded['data']['offers']
-    except JSONDecodeError:
-        return None
+            try:
+                response_decoded = await response.json()
+                offer_list = response_decoded['data']['offers']
+            except JSONDecodeError:
+                return None
 
     return offer_list
 
@@ -84,8 +83,8 @@ def make_offer_list_messages(offer_list, limit=None, page=False):
     return offer_messages
 
 
-def notify_subscribers(current_chat_id, offer_list, offer_type, payment_method, currency_code):
-    subscribers = db_get_subscribers(offer_type, payment_method, currency_code)
+async def notify_subscribers(current_chat_id, offer_list, offer_type, payment_method, currency_code):
+    subscribers = await db_get_subscribers(offer_type, payment_method, currency_code)
     new_offers_filter = makefilter(offer_list)
     filtered_offers = list(filter(new_offers_filter, offer_list))
 

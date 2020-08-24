@@ -3,3 +3,4 @@ pymongo
 aiohttp
 requests
 nest_asyncio
+motor
