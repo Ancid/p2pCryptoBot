@@ -70,8 +70,8 @@ def db_update_currency(chat_id, currency):
     return db_get_user(chat_id)
 
 
-def db_check_subscription(chat_id):
-    user = db_users.find_one({
+async def db_check_subscription(chat_id):
+    user = await db_users.find_one({
         "chat_id": chat_id
     })
     if user:
