@@ -1,4 +1,4 @@
-from telebot import types
+from aiogram import types
 
 
 def markup_actions(active=None):

@@ -1,4 +1,4 @@
-from telebot import types
+from aiogram import types
 
 CUR_MORE = "more"
 CUR_EVEN_MORE = "even_more"

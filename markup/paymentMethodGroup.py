@@ -1,4 +1,4 @@
-from telebot import types
+from aiogram import types
 
 PMG_GIFT_CARD = "gift-cards"
 PMG_ONLINE_WALLET = "online-transfers"

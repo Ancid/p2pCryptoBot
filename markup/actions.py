@@ -1,8 +1,8 @@
-from telebot import types
+from aiogram import types
 
 
 def markup_actions(active=None):
-    if active == True:
+    if active:
         mp_actions = types.InlineKeyboardMarkup(row_width=3)
         mp_actions.add(
             types.InlineKeyboardButton(text="Change subscription", callback_data="action:subscribe"),

@@ -6,6 +6,7 @@ from aiohttp import web
 
 from mongo_db.db import db_bench, create_indexes
 from subscriptions import walk_through_subsciptions
+
 nest_asyncio.apply()
 
 app = web.Application()
@@ -14,6 +15,7 @@ app = web.Application()
 async def startup(_):
     await create_indexes()
 
+
 app.on_startup.append(startup)
 
 
@@ -21,14 +23,11 @@ async def webhook(request):
     try:
         request_body_dict = await request.json()
         bot.process_new_updates([types.Update.de_json(request_body_dict)])
-        text="Processed"
+        text = "Processed"
     except Exception as e:
-        text="Error: " + str(e)
+        text = "Error: " + str(e)
     return web.Response(text=text)
 
-
-async def index(request):
-    return web.Response(text="Hello from OffersBot!")
 
 
 async def reset_webhook(request):
@@ -66,7 +65,6 @@ async def bench(request):
 
 app.router.add_post("/{token}", webhook)
 
-app.router.add_get("/", index)
 app.router.add_get("/reset_webhook", reset_webhook)
 app.router.add_get("/check/subscriptions", check_subscriptions)
 app.router.add_get("/alias", check_subscriptions)
