@@ -1,9 +1,5 @@
 import os
 
-from starlette.config import Config
-
-# config = Config(".env")
-
 
 TOKEN = '1206885593:AAH4kKVpyM-BdznBGmaHmriMfoF2PR49sBc'    #prod
 APP_NAME = "paxful-offers-bot"
