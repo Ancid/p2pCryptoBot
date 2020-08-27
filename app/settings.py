@@ -5,11 +5,11 @@ from starlette.config import Config
 # config = Config(".env")
 
 
-TOKEN = "1275378588:AAF3KRJxWTCsR5RXtG4H6WRkybr4Gkk-g3Y"  # test
-
-APP_NAME = "serene-lake-49241"
+TOKEN = '1206885593:AAH4kKVpyM-BdznBGmaHmriMfoF2PR49sBc'    #prod
+APP_NAME = "paxful-offers-bot"
 MONGODB_URI = os.environ["MONGODB_URI"]
 APP_DEBUG = os.environ.get("DEBUG", False)
+# TOKEN = "1275378588:AAF3KRJxWTCsR5RXtG4H6WRkybr4Gkk-g3Y"  # test
 # MONGODB_URI = 'mongodb://localhost:27017/offersBot'
 # APP_DEBUG = os.environ.get("DEBUG", True)
 
