@@ -3,10 +3,10 @@ from fastapi import APIRouter, Request
 
 from app import telegram
 from app.db import db_bench
-from app.settings import APP_NAME, TOKEN
+from app.settings import TOKEN
 from app.subscriptions import walk_through_subscriptions
 from app.telegram import bot
-from config import WEBHOOK_URL
+from app.settings import WEBHOOK_URL
 
 router = APIRouter()
 
@@ -27,14 +27,17 @@ async def resetWebhook():
 
 
 @router.post("/{token}", tags=["Webhook"])
-async def webhook(request: Request):
-    data = await request.json()
-    update = types.Update(**data)
+async def webhook(token, request: Request):
+    if token == TOKEN:
+        data = await request.json()
+        update = types.Update(**data)
 
-    # response within 60 seconds
-    await telegram.dp.updates_handler.notify(update)
+        # response within 60 seconds
+        await telegram.dp.updates_handler.notify(update)
 
-    return "OK"
+        return "OK"
+    else:
+        return "Invalid token"
 
 
 @router.get("/bench", tags=["Subscriptions"])

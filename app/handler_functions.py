@@ -1,3 +1,4 @@
+from app.actions import markup_actions
 from markup.actionSearch import markup_search_actions
 from markup.currency import markup_currency
 from markup.paymentMethod import markup_payment_method
@@ -9,10 +10,9 @@ from app.messages import (
     MSG_CHOOSE_PAYMENT,
     MSG_OFFERS,
     MSG_OFFERS_EMPTY,
-    MSG_OOPS,
+    MSG_OOPS, MSG_CHECK_OFFERS,
 )
-from app.offers import get_offers_array, make_offer_list_messages, notify_subscribers
-from app.settings import SEARCH_LIMIT
+from app.settings import SEARCH_LIMIT, MODE_SUBSCRIBE
 
 
 def check_filled_options(user, mode):
@@ -25,6 +25,11 @@ def check_filled_options(user, mode):
 
 
 async def show_offers(client, chat_id, paginated=False, reset_page=False):
+    from app.offers import (
+        get_offers_array,
+        make_offer_list_messages,
+        notify_subscribers,
+    )
     from app.telegram import bot
 
     if reset_page:
@@ -130,3 +135,18 @@ async def choosing_currency(message, page=False):
     except Exception as e:
         print("choosing_currency error: " + str(e))
         bot.send_message(message, MSG_OOPS)
+
+
+async def process_user_subscription(chat_id):
+    await db_queries.update_subscription(chat_id, True)
+    user = await db_queries.get_user(chat_id)
+    await db_queries.log_active_subscription(user)
+    from app.telegram import bot
+    await bot.send_message(
+        chat_id,
+        "Awesome!  I’ll let you know when new *" + user[MODE_SUBSCRIBE]['offer_type'].upper() + "* Btc offers for *" + \
+        user[MODE_SUBSCRIBE]['payment_method'].upper() + "* in *" + user[MODE_SUBSCRIBE]['currency_code'].upper() + \
+        "* pop up.",
+        parse_mode="Markdown"
+    )
+    await bot.send_message(chat_id, MSG_CHECK_OFFERS, reply_markup=markup_actions(True))

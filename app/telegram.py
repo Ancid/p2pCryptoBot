@@ -2,12 +2,11 @@ import asyncio
 
 import aiogram
 import httpx
-from aiogram.dispatcher.webhook import get_new_configured_app
 from aiogram.types import ContentType, Message
 from aiogram.utils.executor import start_webhook
+# from app.settings import WEBAPP_PORT, WEBHOOK_PATH, WEBHOOK_URL
 from fastapi import FastAPI
 
-from config import APP_NAME, TOKEN, WEBHOOK_PATH, WEBAPP_HOST, WEBAPP_PORT, WEBHOOK_URL
 from markup.currency import CUR_EVEN_MORE, CUR_MORE
 from markup.offerType import markup_offer_type
 from markup.sameSearch import markup_same_search
@@ -19,11 +18,10 @@ from app.handler_functions import (
     choosing_currency,
     choosing_payment_method,
     choosing_payment_method_group,
-    show_offers,
+    show_offers, process_user_subscription,
 )
 from app.messages import MSG_HELLO, MSG_OOPS, MSG_SELECT_TYPE, MSG_UNSUBSCRIBED
 from app.settings import MODE_SEARCH, MODE_SUBSCRIBE
-from app.subscriptions import process_subscription
 
 bot = aiogram.Bot(token=settings.TOKEN)
 dp = aiogram.Dispatcher(bot)
@@ -38,7 +36,6 @@ async def start(message: Message):
     )
 
 
-# @dp.callback_query_handler(func=lambda call: True)
 @dp.callback_query_handler(lambda c: c.data)
 async def callback_inline_offer_type(call):
     if call.message:
@@ -120,7 +117,7 @@ async def callback_inline_offer_type(call):
                     if active_mode == MODE_SEARCH:
                         await show_offers(client, call.message.chat.id, False, True)
                     elif active_mode == MODE_SUBSCRIBE:
-                        await process_subscription(call.message.chat.id, client)
+                        await process_user_subscription(call.message.chat.id)
                     else:
                         await bot.send_message(
                             call.message.chat.id,
@@ -140,27 +137,28 @@ async def callback_inline_offer_type(call):
                 await show_offers(client, call.message.chat.id, True)
 
 
-# def use_with_debug(app: FastAPI):
-#     async def start_polling():
-#         app.state.polling = asyncio.create_task(dp.start_polling(timeout=1))
-#
-#     async def stop_polling():
-#         if app.state.polling:
-#             app.state.polling.cancel()
-#             await app.state.polling
-#
-#     if settings.APP_DEBUG:
-#         app.add_event_handler("startup", start_polling)
-#         app.add_event_handler("shutdown", stop_polling)
+def use_with_debug(app: FastAPI):
+    async def start_polling():
+        app.state.polling = asyncio.create_task(dp.start_polling(timeout=1))
+
+    async def stop_polling():
+        if app.state.polling:
+            app.state.polling.cancel()
+            await app.state.polling
+
+    if settings.APP_DEBUG:
+        app.add_event_handler("startup", start_polling)
+        app.add_event_handler("shutdown", stop_polling)
 
 
 # async def on_startup(dp):
 #     await bot.set_webhook(WEBHOOK_URL)
 #     # insert code here to run it after start
 #
-#     dp.register_message_handler(start, commands=['start'])
-#     dp.register_message_handler(callback_inline_offer_type, state='*')
-
+#     dp.register_message_handler(start, commands=["start"])
+#     dp.register_message_handler(callback_inline_offer_type, state="*")
+#
+#
 # async def on_shutdown(dp):
 #
 #     # Remove webhook (not acceptable in some cases)
@@ -170,16 +168,17 @@ async def callback_inline_offer_type(call):
 #     await dp.storage.close()
 #     await dp.storage.wait_closed()
 
-# if __name__ == '__main__':
-#     # app = get_new_configured_app(dispatcher=dp, path=WEBHOOK_PATH)
-#     # app.on_startup.append(on_startup)
-#     #
-#     start_webhook(
-#         dispatcher=dp,
-#         webhook_path=WEBHOOK_PATH,
-#         on_startup=on_startup,
-#         on_shutdown=on_shutdown,
-#         skip_updates=True,
-#         host=WEBAPP_HOST,
-#         port=WEBAPP_PORT,
-#     )
+
+# if __name__ == "__main__":
+    # app = get_new_configured_app(dispatcher=dp, path=WEBHOOK_PATH)
+    # app.on_startup.append(on_startup)
+
+    # start_webhook(
+    #     dispatcher=dp,
+    #     webhook_path=WEBHOOK_PATH,
+    #     on_startup=on_startup,
+    #     on_shutdown=on_shutdown,
+    #     skip_updates=True,
+    #     host=WEBAPP_HOST,
+    #     port=WEBAPP_PORT,
+    # )

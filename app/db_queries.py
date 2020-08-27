@@ -102,8 +102,8 @@ async def update_subscription(chat_id, active):
     )
 
 
-def db_log_active_subscription(user):
-    db_users_history.insert_one(
+async def log_active_subscription(user):
+    await db_users_history.insert_one(
         {
             "user": user["chat_id"],
             "mode": "subscription",

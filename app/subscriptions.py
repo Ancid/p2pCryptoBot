@@ -40,7 +40,7 @@ async def process_subscription(subscription, client: httpx.AsyncClient):
     if settings.APP_DEBUG:
         print("Fetch User: " + str(user_time))
 
-    if any_user["subscription"]["active"]:
+    if any_user and any_user["subscription"]["active"]:
         offers_time = time.time()
         offers = await get_offers_array(
             client,
