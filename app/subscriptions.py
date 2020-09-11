@@ -6,7 +6,7 @@ import httpx
 
 from app import db_queries, settings
 from app.db import db_users
-from app.offers import get_offers_array, notify_subscribers
+from app.offers import get_offers_array, notify_subscribers, makefilter
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +52,8 @@ async def process_subscription(subscription, client: httpx.AsyncClient):
         if not offers:
             print("Error response from Paxful API")
         else:
+            new_offers_filter = await makefilter(offers)
+            offers = list(filter(new_offers_filter, offers))
             print(
                 "Notify "
                 + str(subscription["count"])

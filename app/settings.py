@@ -1,8 +1,8 @@
 import os
 
 
-TOKEN = '1206885593:AAH4kKVpyM-BdznBGmaHmriMfoF2PR49sBc'    #prod
 APP_NAME = "paxful-offers-bot"
+TOKEN = '1206885593:AAH4kKVpyM-BdznBGmaHmriMfoF2PR49sBc'    #prod
 MONGODB_URI = os.environ["MONGODB_URI"]
 APP_DEBUG = os.environ.get("DEBUG", False)
 # TOKEN = "1275378588:AAF3KRJxWTCsR5RXtG4H6WRkybr4Gkk-g3Y"  # test

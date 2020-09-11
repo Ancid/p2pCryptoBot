@@ -7,5 +7,5 @@ app = FastAPI(debug=settings.APP_DEBUG)
 app.add_event_handler("startup", db.create_indexes)
 app.include_router(router)
 
-# if settings.APP_DEBUG:
-#     telegram.use_with_debug(app)
+if settings.APP_DEBUG:
+    telegram.use_with_debug(app)
