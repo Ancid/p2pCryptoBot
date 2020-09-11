@@ -39,6 +39,7 @@ async def get_offers_array(
         "https://paxful.com/api/offer/all",
         data=body,
         headers={"content-type": "text/plain", "accept": "application/json"},
+        timeout=20
     )
 
     try:
@@ -105,8 +106,8 @@ async def notify_subscribers(
     new_offers_filter = await makefilter(offer_list)
     filtered_offers = list(filter(new_offers_filter, offer_list))
 
-    print(str(len(filtered_offers)) + " offers for notify ")
-    if len(filtered_offers):
+    if len(filtered_offers) > 0:
+        print(str(len(filtered_offers)) + " offers for notify ")
         for user in subscribers:
             if user["chat_id"] != current_chat_id:
                 await send_found_new_offers(user, filtered_offers)

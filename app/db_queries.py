@@ -168,13 +168,17 @@ async def check_new_offers(offers_list):
 
 async def save_offers(offers_list):
     if len(offers_list):
-        for offer in offers_list:
-            try:
-                await db_offers.insert_one(
-                    {"hash": offer["offer_id"], "created_at": datetime.now()},
-                )
-            except DuplicateKeyError:
-                pass
+        # for offer in offers_list:
+        try:
+            # await db_offers.insert_one(
+            #     {"hash": offer["offer_id"], "created_at": datetime.now()},
+            # )
+            await db_offers.insert_many(
+                {"hash": offer["offer_id"], "created_at": datetime.now()}
+                for offer in offers_list
+            )
+        except DuplicateKeyError:
+            pass
 
 
 async def get_subscribers(offer_type, payment_method, currency_code):
